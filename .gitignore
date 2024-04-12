@@ -1,0 +1,8 @@
+/data
+/notes.txt
+*.vscode
+/code/_pycache_
+/code/src/LICENSE
+/code/src/run.py
+/results/test
+/results/tutorial
