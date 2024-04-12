@@ -9,6 +9,7 @@ maps_folder = "./data/Image_Maps"
 norm_images_folder = './data/for_normalization/Images'
 norm_maps_folder = "./data/for_normalization/Image_Maps"
 num_images = 120
+csv_path = "data/Csv_Files/VerifiedIvyGap858ImageCohort.csv"
 
 data = pd.read_csv(verified_images_csv, header=None)
 selected_image_paths = data.iloc[:, 0]
@@ -23,6 +24,7 @@ print(f"Total images copied: {len(os.listdir(images_folder))}")
 print(f"Total maps copied: {len(os.listdir(maps_folder))}")
 
 # Randomly select 120 image maps for acquiring normalization parameters
-randomly_select_images(maps_folder, num_images, norm_maps_folder)
+# randomly_select_images(maps_folder, num_images, norm_maps_folder)
+randomly_select_maps(csv_path, maps_folder, norm_maps_folder)
 # Get their corresponding images
 get_images_from_selected_maps(norm_maps_folder, images_folder, norm_images_folder)
