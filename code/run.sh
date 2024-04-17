@@ -1,15 +1,8 @@
 #!/usr/bin/env bash
 set -ex
 # #####################################################
-# Author: Jose L. Agraz, PhD
-# Date: Jan 6, 2022
-# #####################################################
 # Images, image maps, tissue to exclude, and output dataframe name
 # #####################################################
-# Image_Array=(          "266290664.jpg"                    "268005945.jpg"                   "292324603.jpg"                     "292324711.jpg")
-# Image_Map_Array=(      "W19-1-1-D.01_23_LM_266290664.png" "W18-1-1-A.01_2_LM_268005945.png" "W1-1-2-A.1.02_32_LM_292324603.png" "W1-1-2-A.1.02_14_LM_292324711.png")
-# Excluding_Labels=(     ""                                 ""                                "Infiltrating Tumor"                "Infiltrating Tumor")
-# Output_Dataframe_Name=("Dataframe_266290664"              "Dataframe_268005945"             "Dataframe_292324603"               "Dataframe_292324711")
 
 Image_Array=($(ls ./data/for_normalization/Images))
 Image_Map_Array=($(ls ./data/for_normalization/Image_Maps/))
@@ -62,10 +55,8 @@ mkdir -p ./results/Normalization_Parameters/${#Image_Array[@]}_Image_Cohort_Aggr
 # File Paths
 # #####################################################
 Python_Scripts_Directory="./code/src/"
-Images_Directory="./data/for_normalization/Images/"
+Images_Directory="./data/Images/"
 Image_Maps_Directory="./data/for_normalization/Image_Maps/"
-# Images_Directory="./data/tutorial/Images/"
-# Image_Maps_Directory="./data/tutorial/Image_Maps/"
 Gray_Level_Labels_Directory="./data/Csv_Files/"
 Output_Files="./results/"
 # #####################################################
@@ -91,28 +82,28 @@ done
 #   2) Aggregate stain vectors and histogram from four
 #      images in step 1
 #####################################################
-# echo "----------------------------------------------------"
-# echo "Aggregate stain vectors and histograms              "
-# echo "----------------------------------------------------"
-# python $Python_Scripts_Directory"2-Aggregate_Stain_Vectors_and_Histograms.py" \
-# --Histogram_Dataframe_Directory    $Output_Files"Images_Histograms_DataFrames" \
-# --Stain_Vector_Dataframe_Directory $Output_Files"Images_Stain_Stats_DataFrames" \
-# --Output_Directory                 $Output_Files"Normalization_Parameters" \
-# --Number_of_Images                 ${#Image_Array[@]}
+echo "----------------------------------------------------"
+echo "Aggregate stain vectors and histograms              "
+echo "----------------------------------------------------"
+python $Python_Scripts_Directory"2-Aggregate_Stain_Vectors_and_Histograms.py" \
+--Histogram_Dataframe_Directory    $Output_Files"Images_Histograms_DataFrames" \
+--Stain_Vector_Dataframe_Directory $Output_Files"Images_Stain_Stats_DataFrames" \
+--Output_Directory                 $Output_Files"Normalization_Parameters" \
+--Number_of_Images                 ${#Image_Array[@]}
 
-# # #####################################################
-# #   3) Normalize each image using aggregated stain vectors
-# #      and histogram in step 2
-# # #####################################################
+# #####################################################
+#   3) Normalize each image using aggregated stain vectors
+#      and histogram in step 2
+# #####################################################
 
-# for i in ${!All_Images_Array[@]}; do
-#     echo "----------------------------------------------------"
-#     echo "Normalize image using aggregated parameters         "
-#     echo "----------------------------------------------------"
-#     python $Python_Scripts_Directory"3-Normalize_Image.py"\
-#     --Image_To_Normalize         $Images_Directory${All_Images_Array[$i]} \
-#     --Normalizing_Histogram      $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortHistograms.npy \
-#     --Normalizing_Stain_Vectors  $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortStainVectors.npy \
-#     --Output_Directory           $Output_Files"Normalized_Images" \
-#     --Stain_Vector_Training      $Training_Time
-# done
+for i in ${!All_Images_Array[@]}; do
+    echo "----------------------------------------------------"
+    echo "Normalize image using aggregated parameters         "
+    echo "----------------------------------------------------"
+    python $Python_Scripts_Directory"3-Normalize_Image.py"\
+    --Image_To_Normalize         $Images_Directory${All_Images_Array[$i]} \
+    --Normalizing_Histogram      $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortHistograms.npy \
+    --Normalizing_Stain_Vectors  $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortStainVectors.npy \
+    --Output_Directory           $Output_Files"Normalized_Images" \
+    --Stain_Vector_Training      $Training_Time
+done
