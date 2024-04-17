@@ -1,22 +1,8 @@
 #------------------------------------------------------------------------------------------------
 # Name          : Normalize Image
-# Date          : Jan 3, 2023
-# Author        : Jose L. Agraz, PhD
-# Co-Author     : Caleb Grenko
-# Funding       : Spyros Bakas, PhD
 #
 # Description   : This script normalizes image stain colors by applying
 #                 a set of stain vectors and histogram
-#
-# Usage Example :
-#       python Normalize_Image.py\
-#             --Image_To_Normalize        /home/jlagraz/Documents/Normalization/BaSSaN-Update/IvyGapPictures/266290664.jpg\
-#             --Normalizing_Histogram     /home/jlagraz/Documents/Normalization/BaSSaN-Update/Produce_Single_Image_Normalization/Dataframes_Single_Image/100_Images_Normalization/1/100Image_Cohort_Results/100ImageCohortHistograms.npy\
-#             --Normalizing_Stain_Vectors /home/jlagraz/Documents/Normalization/BaSSaN-Update/Produce_Single_Image_Normalization/Dataframes_Single_Image/100_Images_Normalization/1/100Image_Cohort_Results/100ImageCohortStainVectors.npy\
-#             --Output_Directory          /home/jlagraz/Documents/Normalization/BaSSaN-Update/Produce_Single_Image_Normalization/Output/
-#
-# Notes:
-#  --Image_To_Normalize ../../data/images/266290664.jpg --Normalizing_Histogram ../../results/Normalization_Parameters/3_Image_Cohort_Aggregated_Normalization_Parameters/3ImageCohortHistograms.npy --Normalizing_Stain_Vectors ../../results/Normalization_Parameters/3_Image_Cohort_Aggregated_Normalization_Parameters/3ImageCohortStainVectors.npy --Output_Directory ../../results/Normalized_Images
 #
 # ------------------------------------------------------------------------------------------------
 # Library imports
@@ -37,11 +23,6 @@ from skimage.exposure      import match_histograms
 from dask_image.imread     import imread
 from sklearn.preprocessing import minmax_scale
 #
-__author__  = 'Jose L. Agraz, PhD'
-__status__  = "Public_Access"
-__credits__ = ['Spyros Bakas','Caleb Grenko']
-__version__ = "0.0.1"
-#
 #------------------------------------------------------------------------------------------------
 # Constants
 #------------------------------------------------------------------------------------------------
@@ -52,8 +33,6 @@ COLOR                                       = 1
 PIXEL_QUANTITY                              = 0
 #------------------------------------------------------------------------------------------------
 # Function Name: Get Arguments
-# Author: Jose L. Agraz, PhD
-# Date: 03/12/2020
 # Description: Define input arguments
 # Input: image name, histogram, stain vectors and output directory
 # Output: Argument list
@@ -90,8 +69,6 @@ def GetArguments():
 
 #------------------------------------------------------------------------------------------------
 # Function Name: Initialize
-# Author: Jose L. Agraz, PhD
-# Date: 04/14/2020
 # Description: Sets up input, directories, and images for process
 # Input: None
 # Output: Output File path
@@ -120,8 +97,6 @@ def Initialize():
     return OutputFilePath
 #------------------------------------------------------------------------------------------------
 # Function Name: Creates a directory
-# Author: Jose L. Agraz, PhD
-# Date: 04/12/2020
 # Description: Created a directory
 # Input: path
 # Output: none
@@ -136,8 +111,6 @@ def CreateDirectory(OutputPath):
 
 #------------------------------------------------------------------------------------------------
 # Function Name: Load Input Files
-# Author: Jose L. Agraz, PhD
-# Date: 04/14/2020
 # Description: Sets up input, directories, and images for process
 # Input: None
 # Output: Image name, histogram, and stain vectors
@@ -183,8 +156,6 @@ def LoadInputFiles():
 
 #------------------------------------------------------------------------------------------------
 # Function Name: Terminate
-# Author: Jose L. Agraz, PhD
-# Date: 04/14/2020
 # Description: Save normalized image and update user
 # Input: output file name, normalized image, input image, stain vectors
 # Output: None
@@ -216,8 +187,6 @@ def Terminate(OutputFilePath,NewImage, OriginalImage,NormalizingStainVectors):
 
 #-----------------------------------------------------------------
 # Name: Sort Out Stain Vectors
-# Author: Jose L. Agraz, PhD., Caleb Grenko
-# Date: 06/12/2020
 # Description: Output vectors definition is undefined. Need to find
 #              H&E vector order by which is more blue.
 # Input: Stain vectors
@@ -252,8 +221,6 @@ def SortOutStainVectors(StainVectors):
 
 #------------------------------------------------------------------------------------------------
 # Function Name: Use Histogram Matching
-# Author: JL Agraz, PhD
-# Date: 11/07/2020
 # Description: Match histogram
 # Input: image optical density, color array, and pixel count
 # Output: Histogram
@@ -273,8 +240,6 @@ def UseHistogramMatching(ImageToTransformDensity, PixelColorArray,PixelCountArra
     return MatchedHistogramDensity[:,0]
 #------------------------------------------------------------------------------------------------
 # Function Name: Improved Unravel Array
-# Author: JL Agraz, PhD
-# Date: 11/07/2020
 # Description: Unravel histogram
 # Input: color array, and pixel count
 # Output: Array
@@ -291,8 +256,6 @@ def ImprovedUnravelArray(PixelColorArray,PixelCountArray):
 
 #------------------------------------------------------------------------------------------------
 # Function Name: Normalize Image
-# Author: JL Agraz, PhD
-# Date: 11/07/2020
 # Description: Normalize image
 # Input: image, histogram, and stain vectors
 # Output: normalized image
@@ -432,8 +395,6 @@ def NormalizeImage(InputImage,NormalizingHistogram,NormalizingStainVectors):
     return OutputImage
 #------------------------------------------------------------------------------------------------
 # Function Name: Find Stain Vectors
-# Author: Jose L. Agraz, PhD
-# Date: 04/14/2020
 # Description:
 # Input: None
 # Output: None
@@ -473,8 +434,6 @@ def normalize_rows(InputArray):
     return NewImage / da.linalg.norm(NewImage, axis=1)[:, None]
 #------------------------------------------------------------------------------------------------
 # Function Name: Find Density Map
-# Author: Jose L. Agraz, PhD
-# Date: 04/14/2020
 # Description:
 # Input: None
 # Output: None

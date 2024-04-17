@@ -1,22 +1,9 @@
 # ------------------------------------------------------------------------------------------------
 # Name          : Produce_Image_Stain_Vectors_and_Optical_Density
-# Date          : Jan 3, 2023
-# Author        : Jose L. Agraz, PhD
-# Co-Author     : Caleb Grenko
-# Funding       : Spyros Bakas, PhD
 #
 # Description   : This script calculates the stain vectors and color
 #                 histogram for a H&E histology image
 #
-# Usage Example :
-#       python Produce_Image_Stain_Vectors_and_Optical_Density.py\
-#       --Slide_Image                /home/jlagraz/Documents/Normalization/BaSSaN-Update/IvyGapPictures/266290664.jpg\
-#       --Label_Map_Image            ./Normalization_Example/Images_and_Maps/W18-1-1-A.01_2_LM_268005945.png\
-#       --Gray_Level_To_Label_Legend ./Normalization_Example/Csv_Files/LV_Gray_Level_to_Label.csv\
-#       --Output_Dataframe_File      ./Normalization_Example/Output/Images_DataFrames/Dataframe_268005945\
-#       --Excluding_Labels           ""
-#
-# Notes:
 # ------------------------------------------------------------------------------------------------
 # Library imports.
 # ------------------------------------------------------------------------------------------------
@@ -34,11 +21,6 @@ import pandas         as pd
 import dask.array     as da
 import pickle5 as pickle
 
-# ------------------------------------------------------------------------------------------------
-__author__  = ['Jose L. Agraz, PhD']
-__status__  = "Public_Access"
-__credits__ = ['Spyros Bakas','Caleb Grenko']
-__version__ = "0.0.1"
 # ------------------------------------------------------------------------------------------------
 # Constants
 # ------------------------------------------------------------------------------------------------
@@ -299,8 +281,6 @@ class CompositeStatistics:
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Get Arguments
-# Author: Jose L. Agraz, PhD.,
-# Date: 03/12/2020
 # Description: Define input arguments using flags
 # Input: Slides, Label Map Color file, and output file
 # Output: Argument list
@@ -342,9 +322,6 @@ def GetArguments():
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Exclude Feature Labels
-# Author: Jose L. Agraz, PhD.,
-# Date: 03/12/2020
-# Description:
 # Input: Excluding Feature List
 # Output: gray level label
 # ------------------------------------------------------------------------------------------------
@@ -386,8 +363,6 @@ def ExcludeFeatureLabels(ExcludingFeatureList):
     return NewGrayLevelLabelList
 # ------------------------------------------------------------------------------------------------
 # Function Name: Creates a directory
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/12/2020
 # Description: Created a directory
 # Input: path
 # Output: output path
@@ -403,8 +378,6 @@ def CreateDirectory(OutputPath):
     return str(OutputPath)
 # ------------------------------------------------------------------------------------------------
 # Function Name: Import Gray Level Legend Data
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Reads Label Map legend CSV data as a DataFrame and trims unused data
 # Input: Data path
 # Output: Dataframe
@@ -435,8 +408,6 @@ def ImportGrayLevelLegendData(SpreadsheetPath,GreyLevelLabels):
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Initialize
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Sets up input, directories, and images for process
 # Input: None
 # Output: Image and map data
@@ -476,8 +447,6 @@ def Initialize():
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Find and Label Unique Pixels
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Match unique pixels to label map
 # Input: Label map and image
 # Output: Matching Features to gray level pixel map
@@ -510,8 +479,6 @@ def FindAndLabelUniquePixels(MapDataFrame, ImageLabelMap):  # Pixel by pixel fin
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Load Image Pairs
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Loads image pairs
 # Input: path and image pair names
 # Output: Images
@@ -539,8 +506,6 @@ def LoadImagePairs(SlideName, LabelMapName):
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Test file
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Verify there are no problems with file
 # Input: File name
 # Output: None
@@ -561,8 +526,6 @@ def TestFile(FileName):
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: DataFrame to a Lists
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Convert a dataframe to a list
 # Input: Label Dataframe
 # Output: Gray level, Feature, and RGB lists
@@ -585,8 +548,6 @@ def SplitLabelDataFrameToLists(DataFrame):
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Build Mask for Target feature
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Build Mask for Target feature
 # Input: Image data, Gray Level values
 # Output: Pixel Mask
@@ -602,8 +563,6 @@ def BuildMaskForTargetFeature(Image, GrayLevel):
 
 # ------------------------------------------------------------------------------------------------
 # Function Name: Fetch Data Frame
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Building list for dataframe export
 # Input: Composite statistics data
 # Output: List of Composite statistics data
@@ -671,8 +630,6 @@ def ClassDataToList(CompositeData):
 
 # ----------------------------------------------------------------------------------
 # Function Name: Get Image Composite Statistics
-# Author: Jose L. Agraz, PhD
-# Date: 04/14/2020
 # Description:
 # Input: none
 # Output: none
@@ -735,8 +692,6 @@ def ExecuteDeconvolution(SlideImage,LabelMapImage):
 
 # ----------------------------------------------------------------------------------
 # Function Name: Applying Filters
-# Author: Jose L. Agraz, PhD.,
-# Date: 04/14/2020
 # Description: Discards small areas
 # Input: SlideImage, SlideImageName, Statistics, LabelMapImage, LabelMapImageName, GrayLevel,Feature
 # Output: Statistics
@@ -786,8 +741,6 @@ def ApplyingFilters(SlideImage, SlideImageName, Statistics, LabelMapImage, Label
 
 # ----------------------------------------------------------------------------------
 # Function Name: Terminate Process
-# Author: Jose L. Agraz, PhD
-# Date: 04/14/2020
 # Description: Wraps up program
 # Input: Areas Component List
 # Output: Stain Vectors and Optical Density Dataframes

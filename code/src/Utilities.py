@@ -1,14 +1,8 @@
 #------------------------------------------------------------------------------------------------
 # Name          : Utilities
-# Date          : Sep 3, 2022
-# Author        : Jose L. Agraz, PhD
-# Co-Author     : Wang Hao, Caleb Grenko
-# Funding       : Spyros Bakas, PhD
 #
 # Description   : Set of functions to apply Vahadane's normalization algorithm
 #                 https://github.com/wanghao14/Stain_Normalization
-#
-# test
 #
 # ------------------------------------------------------------------------------------------------
 # Library imports
@@ -63,12 +57,8 @@ def normalize_rows(A):
 
 #-----------------------------------------------------------------
 # Name: Sort Out Stain Vectors
-# Author: Jose L. Agraz, PhD., Caleb Grenko
-# Date: 06/12/2020
 # Description: Output vectors definition is undefined. Need to find
 #              H&E vector order by which is more blue.
-# Input:
-# Output:
 #-----------------------------------------------------------------
 def SortOutStainVectors(StainVectors):
 
@@ -206,9 +196,3 @@ def CalculateDensityMap(Image, StainMatrix, lamda):
     DensityMapW = model.coef_.T
 
     return DensityMapW
-
-
-
-
-##### Creaing binary mask to differentiate tissue and background in histology images #####
-# https://github.com/mlcommons/GaNDLF/blob/a934324f520c6932dbb3fd3e1639382a54d418c4/GANDLF/data/patch_miner/opm/utils.py#L39
