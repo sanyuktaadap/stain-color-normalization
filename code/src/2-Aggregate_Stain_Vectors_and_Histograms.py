@@ -20,6 +20,7 @@ import dask.dataframe    as dd
 from pathlib             import Path
 from datetime            import datetime
 #
+__version__ = "0.0.1"
 #-----------------------------------------------------------------
 # Constants
 #-----------------------------------------------------------------

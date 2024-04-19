@@ -23,6 +23,7 @@ from skimage.exposure      import match_histograms
 from dask_image.imread     import imread
 from sklearn.preprocessing import minmax_scale
 #
+__version__ = "0.0.1"
 #------------------------------------------------------------------------------------------------
 # Constants
 #------------------------------------------------------------------------------------------------
@@ -77,7 +78,8 @@ def Initialize():
     global InputArguments
 
     OUTPUT_IMAGE_POSTFIX      = '_Normalized'
-    FILE_EXTENSION            = '.png'
+    # FILE_EXTENSION            = '.png'
+    FILE_EXTENSION            = '.tif'
     InputImageName            = str()
     InputImageNameNoExtension = str()
     NewFileName               = str()
