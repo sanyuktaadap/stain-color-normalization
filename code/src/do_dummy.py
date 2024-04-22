@@ -5,47 +5,24 @@ from PIL import Image
 # Increase the pixel limit
 Image.MAX_IMAGE_PIXELS = None
 
-# x = "data/for_normalization/image_maps/W1-1-2-E.1.01_11_LM_292324350.png"
+# -----------See unique pixel values------------
+x = "data/for_normalization/image_maps/W1-1-2-E.1.01_11_LM_292324350.png"
+# Read image
+image = imread(x)
+# Extract unique values
+ans = np.unique(image)
+# print unique values
+print(ans)
 
-# image = imread(x)
-
-# ans = np.unique(image)
-
-# print(ans)
-
-# StainDictionary = {"idx":[1],
-#                    "Hlabel":[2],
-#                    "Elabel": [3]}
-# import pandas as pd
-# StainHistograms = pd.DataFrame(StainDictionary)
-
-from Utilities import *
+# ------------Convert svs image to dask RGB array-------------
+import openslide
+import dask.array as da
 import numpy as np
-
-img = Image.open('./data/for_normalization/Images/266290718.jpg')
-img_rgb = img.convert('RGB')
-img_array = np.array(img_rgb)
-# print(img_array)
-# stainvectoroutput = CalculateStainVector(img_array, 0.1, 240)
-# print(stainvectoroutput)
-
-
-NUMBER_OF_STAINS = 2
-INFERRED_DIMENSION                = -1
-NUMBER_OF_COLORS                  = 3
-
-X = rgb2od(img).reshape((INFERRED_DIMENSION, NUMBER_OF_COLORS))
-
-model = MiniBatchDictionaryLearning(n_components=NUMBER_OF_STAINS,
-                                        alpha=0.1,
-                                        max_iter=240,
-                                        fit_algorithm='lars',
-                                        positive_code=False,  # This option is not available, but post-processing could be applied
-                                        transform_algorithm='lasso_lars',
-                                        random_state=0)
-print("Shape of X before fitting: ", X.shape)
-model.fit(X)
-print("Shape of X after fitting: ", X.shape)
-
-# learned_dictionary = model.components_
-# print(learned_dictionary)
+# Open the SVS image using openslide
+slide = openslide.OpenSlide('data/temp/TCGA-12-1089-01A-01-TS1.7c4d6265-161f-4c71-ae8e-4ccab1e86a9e.svs')
+# Read the image as a NumPy array
+image_array = np.array(slide.read_region((0, 0), 0, slide.level_dimensions[0]))
+# Convert NumPy array to Dask array
+dask_array = da.from_array(image_array)
+# Extract only RGB channels from RGBA
+dask_array = dask_array[:, :, :3]
