@@ -1,8 +1,8 @@
-notes.txt
-*.vscode
-code/_pycache_
-code/run.py
-code/src/do_dummy.py
+/notes.txt
+/*.vscode
+/code/_pycache_
+/code/run.py
+/code/src/do_dummy.py
 /data
 /results
 /code/src/do_dummy.py
