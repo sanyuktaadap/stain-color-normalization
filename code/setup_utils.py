@@ -14,12 +14,6 @@ def get_maps_from_path(source_folder, path, destination_folder):
     if os.path.exists(source_map_path):
         shutil.copy(source_map_path, destination_folder)
 
-# def randomly_select_images(maps_folder, num_images, destination_folder):
-#     all_maps = os.listdir(maps_folder)
-#     random_maps = random.sample(all_maps, num_images)
-#     for map in random_maps:
-#         shutil.copy(os.path.join(maps_folder, map), destination_folder)
-
 def get_images_from_selected_maps(maps_folder, images_folder, destination_folder):
     maps = os.listdir(maps_folder)
     images = os.listdir(images_folder)
@@ -29,7 +23,7 @@ def get_images_from_selected_maps(maps_folder, images_folder, destination_folder
         if image_name in images:
             shutil.copy(os.path.join(images_folder, image_name), destination_folder)
 
-def randomly_select_maps(csv_path, maps_folder, destination_folder):
+def randomly_select_maps(csv_path, maps_folder, destination_folder, num_images):
     maps_list = os.listdir(maps_folder)
     data = pd.read_csv(csv_path)
     selected_maps_paths = data.iloc[:, 0]
@@ -39,7 +33,7 @@ def randomly_select_maps(csv_path, maps_folder, destination_folder):
         if map_name in maps_list:
             selected_maps_list.append(map_name)
     print(f"Total maps found: {len(selected_maps_list)}")
-    if len(selected_maps_list) > 120:
+    if len(selected_maps_list) > num_images:
         random_maps = random.sample(selected_maps_list, 120)
         for map in random_maps:
             shutil.copy(os.path.join(maps_folder, map), destination_folder)

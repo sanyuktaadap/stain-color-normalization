@@ -1,5 +1,6 @@
 from setup_utils import *
 import pandas as pd
+import random
 
 verified_images_csv = "./data/Csv_Files/VerifiedIvyGap2176ImageCohortListWithExclusions.csv"
 source_images_folder = "./data/RAW"
@@ -24,7 +25,36 @@ print(f"Total images copied: {len(os.listdir(images_folder))}")
 print(f"Total maps copied: {len(os.listdir(maps_folder))}")
 
 # Randomly select 120 image maps for acquiring normalization parameters
-# randomly_select_images(maps_folder, num_images, norm_maps_folder)
 randomly_select_maps(csv_path, maps_folder, norm_maps_folder)
+
 # Get their corresponding images
 get_images_from_selected_maps(norm_maps_folder, images_folder, norm_images_folder)
+
+norm_maps_folder = './data/for_normalization/Image_Maps'
+list_norm_maps = os.listdir(norm_maps_folder)
+csv_path = "data/Csv_Files/VerifiedIvyGap858ImageCohort.csv"
+maps_folder = "./data/Image_Maps"
+
+data = pd.read_csv(csv_path, header=None)
+column = data.iloc[:,0]
+all_map_names = []
+for row in column:
+    map_name = row.split("/")[-1]
+    all_map_names.append(map_name)
+for map_name in list_norm_maps:
+    if map_name in all_map_names:
+        all_map_names.remove(map_name)
+print(f"Total (858-120): {len(all_map_names)}") # 738
+
+maps_folder = "./data/Image_Maps"
+available_maps = os.listdir(maps_folder) #1000
+
+common_maps = list(set(all_map_names).intersection(available_maps))
+
+print(f"Total maps to choose from: {len(common_maps)}")
+
+random_maps = random.sample(common_maps, 5)
+for map in random_maps:
+    shutil.copy(os.path.join(maps_folder, map), "data/for_comparison/Image_Maps")
+
+get_images_from_selected_maps("data/for_comparison/Image_Maps", "data/Images", "data/for_comparison/Images")
