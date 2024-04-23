@@ -54,6 +54,7 @@ Images_Directory="./data/Images/"
 Image_Maps_Directory="./data/for_normalization/Image_Maps/"
 Gray_Level_Labels_Directory="./data/Csv_Files/"
 Output_Files="./results/"
+Normalized_Images_Directory="./data/for_comparison/"
 
 # 1) Calculate stain vectors and histogram for each image and store info in a dataframe
 

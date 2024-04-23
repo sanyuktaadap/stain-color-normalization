@@ -78,8 +78,8 @@ def Initialize():
     global InputArguments
 
     OUTPUT_IMAGE_POSTFIX      = '_Normalized'
-    # FILE_EXTENSION            = '.png'
-    FILE_EXTENSION            = '.tif'
+    FILE_EXTENSION            = '.png'
+    # FILE_EXTENSION            = '.tif'
     InputImageName            = str()
     InputImageNameNoExtension = str()
     NewFileName               = str()
