@@ -1,6 +1,9 @@
+#----------Get images maps from the list of Verified images---------------
+
 from setup_utils import *
 import pandas as pd
 import random
+from tqdm import tqdm
 
 verified_images_csv = "./data/Csv_Files/VerifiedIvyGap2176ImageCohortListWithExclusions.csv"
 source_images_folder = "./data/RAW"
@@ -16,7 +19,7 @@ data = pd.read_csv(verified_images_csv, header=None)
 selected_image_paths = data.iloc[:, 0]
 selected_map_paths = data.iloc[:, 1]
 
-# Get images and corresponding maps from the list of Verified IvyGap images
+# Get the images and maps
 for i in range(len(selected_image_paths)):
     get_images_from_path(source_images_folder, selected_image_paths[i], images_folder)
     get_maps_from_path(source_maps_folder, selected_map_paths[i], maps_folder)
@@ -53,8 +56,51 @@ common_maps = list(set(all_map_names).intersection(available_maps))
 
 print(f"Total maps to choose from: {len(common_maps)}")
 
-random_maps = random.sample(common_maps, 5)
-for map in random_maps:
+random_maps = random.sample(common_maps, 50)
+for map in tqdm(random_maps):
     shutil.copy(os.path.join(maps_folder, map), "data/for_comparison/Image_Maps")
+print(f"All maps copied ({len(random_maps)})")
 
 get_images_from_selected_maps("data/for_comparison/Image_Maps", "data/Images", "data/for_comparison/Images")
+
+print("All images and maps copied")
+
+# -----------Get pixel value count---------------------
+
+from skimage.io import imread
+import matplotlib.pyplot as plt
+# from setup_utils import get_pi_value_count
+from PIL import Image
+from setup_utils import *
+import pandas as pd
+import random
+from tqdm import tqdm
+import os
+import numpy as np
+
+Image.MAX_IMAGE_PIXELS = None
+
+mask_folder_path = "./data/for_comparison/Image_Maps"
+og_img_folder_path = "./data/for_comparison/Images"
+norm_img_folder_path = "./data/for_comparison/Normalized_Images"
+maps_list = os.listdir(mask_folder_path)
+
+roi_list = []
+for map in maps_list:
+    map_path = os.path.join(mask_folder_path, map)
+    map = imread(map_path)
+    uni = np.unique(map)
+    for i in uni:
+        if i not in roi_list:
+            roi_list.append(i)
+
+print(f"ROI List: {roi_list}")
+
+full_dict = get_pi_value_count(roi_list, mask_folder_path, og_img_folder_path, norm_img_folder_path)
+
+for roi in tqdm(full_dict):
+    alpha = full_dict[roi]
+    plt.bar(list(alpha.keys()), alpha.values(), color='g')
+    plt.title(roi)
+    plt.savefig(f"data/for_comparison/results/{roi}.jpg")
+    plt.close()
