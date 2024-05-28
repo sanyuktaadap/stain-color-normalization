@@ -14,7 +14,7 @@ images_path = "./data/for_normalization/Images"
 labels_path = "./data/for_normalization/clustering_results/labels_dict.pkl"
 # Created plots path
 plot_path = "./data/for_normalization/clustering_results/plots.png"
-clusters_range = range(3,14)
+clusters_range = range(5,14)
 
 images_list = os.listdir(images_path)
 total_images = len(images_list) - 1
