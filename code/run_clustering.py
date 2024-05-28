@@ -14,7 +14,7 @@ images_path = "./data/for_normalization/Images"
 labels_path = "./data/for_normalization/clustering_results/labels_dict.pkl"
 # Created plots path
 plot_path = "./data/for_normalization/clustering_results/plots.png"
-clusters_range = range(5,14)
+clusters_range = range(5,15)
 
 images_list = os.listdir(images_path)
 total_images = len(images_list) - 1
@@ -39,6 +39,11 @@ print(f"Stacking Images")
 combined_stack = np.vstack(full_list)
 print(f"All images stacked")
 
+np.save('./interim/combined_stack.npy', combined_stack)
+
+# Load stack
+# combined_stack = np.load('./interim/combined_stack.npy')
+
 clusters = list(clusters_range)
 
 # Elbow Method
@@ -48,6 +53,14 @@ silhouette_scores = []
 # Cluster Labels
 labels_dict = {}
 
+# with open('/interim/scores.pkl', 'rb') as f:
+#     loaded_data = pickle.load(f)
+# inertia = loaded_data["inertia"]
+# silhouette_scores = loaded_data["silhouette_scores"]
+
+# with open('/interim/labels.pkl', "rb") as f:
+#     labels_dict = pickle.load(f)
+
 for k in clusters:
     print(f"Starting Clustering for {k} clusters")
     kmeans = KMeans(n_clusters=k).fit(combined_stack)
@@ -56,24 +69,21 @@ for k in clusters:
     print(f"Collecting labels")
     labels = kmeans.labels_
     print("Storing Labels")
-    # labels_list.append(labels)
     labels_dict[k] = labels.tolist()
     print("Calculating Silhouette Score")
-    silhouette_scores.append(silhouette_score(combined_stack, labels))
+    sscore = silhouette_score(combined_stack, labels)
+    silhouette_scores.append(sscore)
+    print(f"Silhouette Score for {k} clusters: {sscore}")
+    with open('/interim/scores.pkl', 'wb') as f:
+        pickle.dump({'inertia': inertia, 'silhouette_scores': silhouette_scores}, f)
+    with open('/interim/labels.pkl', 'wb') as f:
+        pickle.dump(labels_dict, f)
+    print("All values saved")
     print("-------------------------------")
 
-print(f"Saving the Labels to {labels_path}")
-with open(labels_path, "wb") as f:
-    pickle.dump(labels_dict, f)
-
-# # to load the labels data:
-# import pickle
-
-# # Define the file path from where to load the dictionary
-# file_path = "labels_dict.pkl"
-
-# # Load the labels_dict from the file
-# with open(file_path, "rb") as f:
+# To load the labels data:
+# Load the labels_dict from the file
+# with open("labels_dict.pkl", "rb") as f:
 #     loaded_labels_dict = pickle.load(f)
 
 print("Determining the clustering with the highest silhouette score")
@@ -110,7 +120,6 @@ plt.title('Adjusted Rand Index For Different k')
 plt.tight_layout()
 plt.savefig(plot_path)
 print(f"Plots saved to {plot_path}")
-# plt.show()
 
 # Print the results
 best_k_by_silhouette = clusters[best_k_index]
