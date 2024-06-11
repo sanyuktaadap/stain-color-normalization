@@ -4,7 +4,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
-from sklearn.metrics import silhouette_score, adjusted_rand_score
+from sklearn.metrics import silhouette_score
 import pickle
 
 Image.MAX_IMAGE_PIXELS = None
@@ -37,9 +37,8 @@ for i, image_name in enumerate(images_list):
 
 print(f"Stacking Images")
 combined_stack = np.vstack(full_list)
-print(f"All images stacked")
-
 np.save('./interim/combined_stack.npy', combined_stack)
+print(f"All images stacked")
 
 # Load stack
 # combined_stack = np.load('./interim/combined_stack.npy')
@@ -53,12 +52,12 @@ silhouette_scores = []
 # Cluster Labels
 labels_dict = {}
 
-# with open('/interim/scores.pkl', 'rb') as f:
+# with open('interim/scores.pkl', 'rb') as f:
 #     loaded_data = pickle.load(f)
 # inertia = loaded_data["inertia"]
 # silhouette_scores = loaded_data["silhouette_scores"]
 
-# with open('/interim/labels.pkl', "rb") as f:
+# with open('interim/labels.pkl', "rb") as f:
 #     labels_dict = pickle.load(f)
 
 for k in clusters:
@@ -74,49 +73,37 @@ for k in clusters:
     sscore = silhouette_score(combined_stack, labels)
     silhouette_scores.append(sscore)
     print(f"Silhouette Score for {k} clusters: {sscore}")
-    with open('/interim/scores.pkl', 'wb') as f:
-        pickle.dump({'inertia': inertia, 'silhouette_scores': silhouette_scores}, f)
-    with open('/interim/labels.pkl', 'wb') as f:
+    with open('interim/labels.pkl', 'wb') as f:
         pickle.dump(labels_dict, f)
+    with open('interim/scores.pkl', 'wb') as f:
+        pickle.dump({'inertia': inertia, 'silhouette_scores': silhouette_scores}, f)
     print("All values saved")
     print("-------------------------------")
 
 # To load the labels data:
 # Load the labels_dict from the file
-# with open("labels_dict.pkl", "rb") as f:
+# with open("interim/scores.pkl", "rb") as f:
 #     loaded_labels_dict = pickle.load(f)
 
 print("Determining the clustering with the highest silhouette score")
 best_k_index = np.argmax(silhouette_scores)
-best_labels = labels_dict[clusters[best_k_index]]
-
-print("Calculating Adjusted Rand Index (ARI) for each k against the best_labels")
-ari_scores = [adjusted_rand_score(best_labels, labels_dict[k]) for k in clusters]
 
 # Plotting the results
 plt.figure(figsize=(18, 5))
 
 # Elbow Method plot
-plt.subplot(1, 3, 1)
+plt.subplot(1, 2, 1)
 plt.plot(clusters, inertia, 'bo-')
 plt.xlabel('Number of clusters')
 plt.ylabel('Inertia')
 plt.title('Elbow Method For Optimal k')
 
 # Silhouette Score plot
-plt.subplot(1, 3, 2)
+plt.subplot(1, 2, 2)
 plt.plot(clusters, silhouette_scores, 'bo-')
 plt.xlabel('Number of clusters')
 plt.ylabel('Silhouette Score')
 plt.title('Silhouette Score For Optimal k')
-
-# ARI Score plot
-plt.subplot(1, 3, 3)
-plt.plot(clusters, ari_scores, 'bo-')
-plt.xlabel('Number of clusters')
-plt.ylabel('Adjusted Rand Index')
-plt.title('Adjusted Rand Index For Different k')
-
 plt.tight_layout()
 plt.savefig(plot_path)
 print(f"Plots saved to {plot_path}")
@@ -124,8 +111,6 @@ print(f"Plots saved to {plot_path}")
 # Print the results
 best_k_by_silhouette = clusters[best_k_index]
 best_silhouette_score = silhouette_scores[best_k_index]
-best_ari_score = ari_scores[best_k_index]
 
 print(f'Best k by Silhouette Score: {best_k_by_silhouette}')
 print(f'Best Silhouette Score: {best_silhouette_score}')
-print(f'Best ARI Score: {best_ari_score}')
