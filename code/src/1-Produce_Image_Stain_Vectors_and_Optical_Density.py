@@ -1,6 +1,6 @@
 # Name          : Produce_Image_Stain_Vectors_and_Optical_Density
 # Description   : This script calculates the stain vectors and color
-#                 histogram for a H&E histology image
+#                 histogram for H&E histology imageS
 
 # Library imports.
 from __future__     import division
