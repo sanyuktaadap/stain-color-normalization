@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 # Increase the pixel limit
 Image.MAX_IMAGE_PIXELS = None
 
------------See unique pixel values------------
+# -----------See unique pixel values------------
 x = "data/for_normalization/image_maps/W9-1-1-H.2.02_41_LM_309714697.png"
 # Read image
 image = imread(x)
