@@ -1,6 +1,6 @@
 /notes.txt
 /*.vscode
-/code/_pycache_
+/code/__pycache__
 /code/run.py
 /code/src/do_dummy.py
 /data
@@ -9,3 +9,4 @@
 /output.txt
 /interim
 *.docx
+code/extra

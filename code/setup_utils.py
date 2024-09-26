@@ -6,8 +6,16 @@ import numpy as np
 from skimage.io import imread
 from PIL import Image
 from tqdm import tqdm
+import glob
 
 Image.MAX_IMAGE_PIXELS = None
+
+def randomly_select_maps(maps_folder, destination_folder, num_images=120):
+    maps_list = glob.glob(os.path.join(maps_folder, '*'))
+    random_maps = random.sample(maps_list, num_images)
+    os.makedirs(destination_folder, exist_ok=True)
+    for map in random_maps:
+        shutil.copy(map, destination_folder)
 
 def get_images_from_path(source_folder, path, destination_folder):
     image_path = path.split("/", 7)[-1]
@@ -21,6 +29,7 @@ def get_maps_from_path(source_folder, path, destination_folder):
         shutil.copy(source_map_path, destination_folder)
 
 def get_images_from_selected_maps(maps_folder, images_folder, destination_folder):
+    os.makedirs(destination_folder, exist_ok=True)
     maps = os.listdir(maps_folder)
     images = os.listdir(images_folder)
     for map in maps:
@@ -28,23 +37,6 @@ def get_images_from_selected_maps(maps_folder, images_folder, destination_folder
         image_name = f"{number}.jpg"
         if image_name in images:
             shutil.copy(os.path.join(images_folder, image_name), destination_folder)
-
-def randomly_select_maps(csv_path, maps_folder, destination_folder, num_images):
-    maps_list = os.listdir(maps_folder)
-    data = pd.read_csv(csv_path)
-    selected_maps_paths = data.iloc[:, 0]
-    selected_maps_list = []
-    for path in selected_maps_paths:
-        map_name = path.split("/")[-1]
-        if map_name in maps_list:
-            selected_maps_list.append(map_name)
-    print(f"Total maps found: {len(selected_maps_list)}")
-    if len(selected_maps_list) > num_images:
-        random_maps = random.sample(selected_maps_list, 120)
-        for map in random_maps:
-            shutil.copy(os.path.join(maps_folder, map), destination_folder)
-    else:
-        print("Not enough maps found to copy")
 
 def get_pi_value_count(roi_list, mask_folder_path, og_img_folder_path, norm_img_folder_path):
     all_masks = os.listdir(mask_folder_path)
@@ -93,3 +85,12 @@ def get_pi_value_count(roi_list, mask_folder_path, og_img_folder_path, norm_img_
             print(f"    ROI {num} process completed")
             print()
     return full_dict
+
+if __name__ == "__main__":
+    # maps_folder = "data/Image_Maps"
+    # destination_folder = "data/for_normalization/Image_Maps"
+    # randomly_select_maps(maps_folder, destination_folder)
+    maps_folder = "data/for_normalization/Image_Maps"
+    images_folder = "data/Images"
+    destination_folder = "data/for_normalization/Images"
+    get_images_from_selected_maps(maps_folder, images_folder, destination_folder)
