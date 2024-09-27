@@ -28,6 +28,7 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
         - Filter out patches with more than 50% of white pixels.
         - Store the patches and their top-left coordinates in HDF5 format.
     """
+
     image_paths = glob.glob(os.path.join(images_folder, "*"))
     total = len(image_paths)
     for i, image_path in enumerate(tqdm(image_paths)):
@@ -122,17 +123,21 @@ def stitch_patches(hdf5_file, original_size, patch_size=256):
 
 if __name__ == "__main__":
 
-    images_folder = "data/for_normalization/Images"
-    images = os.listdir(images_folder)
+    parser = argparse.ArgumentParser(description='Extract patches from WSI.')
+    parser.add_argument('--images_folder', default="data/for_normalization/Images", type=str, required=True, help='Directory where the slide images are located.')
+    parser.add_argument('--hdf5_folder', default="data/for_normalization/patches", type=str, required=True, help='Directory to store the extracted patches.')
+    parser.add_argument('--patch_size', default=256, type=int, required=True, help='Patch size to extract')
+    parser.add_argument('int_thresh', default=245, type=int, help='Pixel intensity threshold for discarging patches. If None, no patches will be discarded.')
+    args = parser.parse_args()
 
+    Image.MAX_IMAGE_PIXELS = None
+
+    images = os.listdir(args.images_folder)
     patch_size = 256
-    hdf5_folder = "data/for_normalization/patches"
 
     # Step 1: Extract patches with coordinates
-    extract_patches(images_folder, patch_size, hdf5_folder)
+    extract_patches(args.images_folder, patch_size, args.hdf5_folder, args.int_thresh)
 
     # (Optional) Stitch patches back
     # reconstructed_image = stitch_patches(hdf5_file, original_size, patch_size)
     # reconstructed_image.save("reconstructed_image.jpg")
-
-    # Step 2: Extract features from patches

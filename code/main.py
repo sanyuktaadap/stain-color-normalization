@@ -2,15 +2,14 @@ import argparse
 import os
 from PIL import Image
 import pandas as pd
-from tensorflow.keras.applications.vgg16 import VGG16
-import tensorflow as tf
 import h5py
-from tqdm import tqdm
 import numpy as np
 import pickle
-import torch.hub as hub
-from torchvision import transforms as T
+
+# Torch imports
 import torch
+from torchvision import transforms as T
+from torchvision import models
 
 # Local Imports
 from extract_patches import extract_patches
@@ -26,7 +25,7 @@ if __name__ == "__main__":
     # Feature extraction arguments
     parser.add_argument('--csv_path', type=str, default="data/for_normalization/slides_list.csv", help='Path to the CSV file containing slide IDs.')
     parser.add_argument('--feat_dir', type=str, default="data/for_normalization/features", help='Directory for saving the extracted features.')
-    parser.add_argument('--n_comp', type=int, default=3, help='Number of components for PCA.')
+    parser.add_argument('--n_comp', type=int, default=32, help='Number of components for PCA.')
     args = parser.parse_args()
 
     images_folder = args.images_folder
@@ -39,19 +38,24 @@ if __name__ == "__main__":
 
     Image.MAX_IMAGE_PIXELS = None
 
-    # # Step 1: Extract patches with coordinates
-    # images = os.listdir(images_folder)
-    # print(f"Patching {len(images)} slides")
-    # extract_patches(images_folder, patch_size, hdf5_folder)
-    # print(f"Patches saved in {hdf5_folder}")
+    # Step 1: Extract patches with coordinates
+    images = os.listdir(images_folder)
+    print(f"Patching {len(images)} slides")
+    extract_patches(images_folder, patch_size, hdf5_folder)
+    print(f"Patches saved in {hdf5_folder}")
 
     # Step 2: Extract Features
     image_id = pd.read_csv(args.csv_path)['slide_id'].to_list()
-    model = hub.load('pytorch/vision:v0.10.0', 'vgg16', pretrained=True)
-    fe = model.features
+    # Load the pre-trained VGG16 model
+    model = models.vgg16(pretrained=True)
+
+    # Step 1: Modify the model to remove the last pooling layer
+    model = torch.nn.Sequential(*list(model.features.children())[:-1])
+    model.eval()
+
     total_images = len(image_id)
 
-    for i, patient_id in enumerate(image_id[:2]):
+    for i, patient_id in enumerate(image_id):
         print(f"{i}/{total_images}")
         patient_id = patient_id.split(".")[0]
         pt_hd5 = f"{os.path.join(hdf5_folder, patient_id)}.h5"
@@ -59,7 +63,6 @@ if __name__ == "__main__":
         with h5py.File(f'{pt_hd5}', "r") as f:
             a_group_key = list(f.keys())[0]
             ds_arr = f[a_group_key][()]
-            print(ds_arr)
             for k, v in f[a_group_key].attrs.items():
                 attr_dict[k] = v
 
@@ -67,7 +70,7 @@ if __name__ == "__main__":
         print(f'Total patches: {total_patches}')
 
         preprocess = T.Compose([
-            T.Resize(size=224),
+            T.Resize(size=256),
             T.ToTensor(),
         ])
 

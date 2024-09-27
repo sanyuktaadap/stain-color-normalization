@@ -6,34 +6,19 @@ Created on Sun Oct 4 10:37:51 2022
 @author: shubham
 """
 
-import tensorflow as tf
 import numpy as np
 import pandas as pd
-import pathlib
-import openslide
 from PIL import Image
-import cv2
 from tqdm import tqdm
-from glob import glob
-from skimage import io
-import matplotlib.pyplot as plt
-from tensorflow.keras.applications.vgg16 import VGG16
-from tensorflow.keras.preprocessing.image import img_to_array
-from tensorflow.keras.applications.resnet50 import preprocess_input
 import pickle
-from skimage.transform import rescale, resize
-from skimage.color import rgb2hed
-from skimage.exposure import rescale_intensity
 import h5py
 import os
-from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 # Torch imports
 import torch
-import torch.nn as nn
-import torch.hub as hub
 from torchvision import transforms as T
+from torchvision import models
 
 
 def get_wsi_features_all_patches(patient_id, n, model, patch_size, slide_dir, ds_arr, preprocess, device):
@@ -68,17 +53,14 @@ def get_wsi_features_all_patches(patient_id, n, model, patch_size, slide_dir, ds
         with torch.no_grad():
             feature = model(patch)
 
-        # pooled_featuremap = feature.squeeze(0).numpy()
-        pooled_featuremap = feature.squeeze(0)#.cpu().numpy()
+        feature_vector = torch.mean(feature, dim=[2, 3])  # Global average pooling
+        pooled_featuremap = feature_vector.squeeze(0)
 
         combine_features.append(pooled_featuremap)
         slide.close()
 
-    print(f'Number of features extracted: {len(combine_features)}')
-    # combine_features_np = np.array(combine_features)
     combine_features_np = np.array([feature.cpu().numpy() for feature in combine_features])
     combine_stack = np.vstack(combine_features_np)
-    print(combine_stack.shape)
     return combine_stack, patches_list
 
 # Dimensionality Reduction
@@ -108,8 +90,14 @@ if __name__ == '__main__':
     Image.MAX_IMAGE_PIXELS = None
 
     image_id = pd.read_csv(args.csv_path)['slide_id'].to_list()
-    model = hub.load('pytorch/vision:v0.10.0', 'vgg16', pretrained=True)
-    fe = model.features
+
+    # Load the pre-trained VGG16 model
+    model = models.vgg16(pretrained=True)
+
+    # Step 1: Modify the model to remove the last pooling layer
+    model = torch.nn.Sequential(*list(model.features.children())[:-1])
+    model.eval()
+
     patch_size = 256
 
     for patient_id in tqdm(image_id):
