@@ -31,6 +31,7 @@ if __name__ == "__main__":
     images_folder = args.images_folder
     patch_size = args.patch_size
     hdf5_folder = args.hdf5_folder
+    csv_path = args.csv_path
     feat_dir = args.feat_dir
     n_comp = args.n_comp
 
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     print(f"Patches saved in {hdf5_folder}")
 
     # Step 2: Extract Features
-    image_id = pd.read_csv(args.csv_path)['slide_id'].to_list()
+    image_id = pd.read_csv(csv_path)['slide_id'].tolist()
     # Load the pre-trained VGG16 model
     model = models.vgg16(pretrained=True)
 
@@ -56,7 +57,11 @@ if __name__ == "__main__":
     total_images = len(image_id)
 
     for i, patient_id in enumerate(image_id):
-        print(f"{i}/{total_images}")
+        name = patient_id.split(".")[0]
+        path = os.path.join(feat_dir, name)
+        print(f"{i}/{total_images} - {name}")
+        if os.path.exists(path):
+            continue
         patient_id = patient_id.split(".")[0]
         pt_hd5 = f"{os.path.join(hdf5_folder, patient_id)}.h5"
         attr_dict = {}
