@@ -65,15 +65,14 @@ def get_wsi_features_all_patches(patient_id, n, model, patch_size, slide_dir, ds
 
 # Dimensionality Reduction
 def dimensionality_reduction(features, n_components=10):
-    print('Dimensionality Reduction...')
+    print(f'Original Feature Shape: {features.shape}')
     scaler = StandardScaler()
     scaled_features = scaler.fit_transform(features)
 
     pca = PCA(n_components=n_components, random_state=42)
     reduced_features = pca.fit_transform(scaled_features)
 
-    print(f'Dimensionality Reduction is Done. Components: {n_components}')
-    print(reduced_features.shape)
+    print(f'Reduced Feature Shape: {reduced_features.shape}')
     return reduced_features
 
 

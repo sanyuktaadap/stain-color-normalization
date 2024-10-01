@@ -5,6 +5,8 @@ import pandas as pd
 import h5py
 import numpy as np
 import pickle
+from tqdm import tqdm
+import sys
 
 # Torch imports
 import torch
@@ -45,12 +47,13 @@ if __name__ == "__main__":
     extract_patches(images_folder, patch_size, hdf5_folder)
     print(f"Patches saved in {hdf5_folder}")
 
-    # Step 2: Extract Features
     image_id = pd.read_csv(csv_path)['slide_id'].tolist()
+    total_images = len(image_id)
+
+    # Step 2: Extract Features
     # Load the pre-trained VGG16 model
     model = models.vgg16(pretrained=True)
 
-    # Step 1: Modify the model to remove the last pooling layer
     model = torch.nn.Sequential(*list(model.features.children())[:-1])
     model.eval()
 
@@ -62,6 +65,7 @@ if __name__ == "__main__":
         print(f"{i}/{total_images} - {name}")
         if os.path.exists(path):
             continue
+
         patient_id = patient_id.split(".")[0]
         pt_hd5 = f"{os.path.join(hdf5_folder, patient_id)}.h5"
         attr_dict = {}
@@ -87,7 +91,33 @@ if __name__ == "__main__":
         with open(os.path.join(output_dir, f'{patient_id}_VGG16_256_patches_path.pkl'), 'wb') as f:
             pickle.dump(patches_list, f)
 
-        print(f"Features saved in {feat_dir}")
+        print(f"Features saved in {output_dir}")
 
-        reduced_features = dimensionality_reduction(wsi_featuremap, n_comp)
-        np.save(os.path.join(output_dir, f'{patient_id}_VGG16_256_reduced_features.npy'), wsi_featuremap, allow_pickle=True)
+    # Step 4: Concatenate all wsi_featuremaps
+    combined_list = []
+    for i, patient_id in tqdm(enumerate(image_id)):
+        name = patient_id.split(".")[0]
+        print(f"{i}/{total_images-1} - {name}")
+        output_dir = os.path.join(feat_dir, name)
+
+        # Load wsi_featuremap from the .npy file
+        wsi_featuremap = np.load(os.path.join(output_dir, f'{name}_VGG16_256.npy'), allow_pickle=True)
+        combined_list.append(wsi_featuremap)
+
+    combined_features = np.concatenate(combined_list, axis=0)
+    np.save(os.path.join(feat_dir, f'combined_feature_maps.npy'), combined_features, allow_pickle=True)
+    print(f"Concatenated Array Shape: {combined_features.shape}")
+
+    # Step 4: Reduce Extracted Features
+    print('Dimensionality Reduction...')
+    if not os.path.exists(os.path.join(feat_dir, f'combined_feature_maps.npy')):
+        print("Feature maps not concatenated!! Exiting...")
+        sys.exit(1)
+
+    # Load wsi_featuremap from the .npy file
+    combined_features = np.load(os.path.join(feat_dir, f'combined_feature_maps.npy'), allow_pickle=True)
+
+    reduced_features = dimensionality_reduction(combined_features, n_comp)
+    np.save(os.path.join(feat_dir, f'combined_VGG16_256_{n_comp}_features.npy'), reduced_features, allow_pickle=True)
+
+    print(f'Dimensionality Reduction is Done. Results Saved in {feat_dir}. Components: {n_comp}')
