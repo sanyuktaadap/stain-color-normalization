@@ -118,6 +118,6 @@ if __name__ == "__main__":
     combined_features = np.load(os.path.join(feat_dir, f'combined_feature_maps.npy'), allow_pickle=True)
 
     reduced_features = dimensionality_reduction(combined_features, n_comp)
-    np.save(os.path.join(feat_dir, f'combined_VGG16_256_{n_comp}_features.npy'), reduced_features, allow_pickle=True)
+    np.save(os.path.join(feat_dir, f'combined_VGG16_256_{n_comp}_reduced_features.npy'), reduced_features, allow_pickle=True)
 
     print(f'Dimensionality Reduction is Done. Results Saved in {feat_dir}. Components: {n_comp}')
