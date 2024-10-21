@@ -36,12 +36,12 @@ GrayLevelLabelMapDataFrame  = pd.DataFrame()
 # This class is initialized to store various statistical metrics related to the image
 class CompositeStatistics:
     def __init__(self):
-        print('Define Image Info Class Variables')
+        # print('Define Image Info Class Variables')
         self.SlideImageName                         = str()
         self.LabelMapImageName                      = str()
         self.FeatureName                            = str()
 
-        print('Define Hematoxylin Info Class Variables')
+        # print('Define Hematoxylin Info Class Variables')
         self.HematoxylinAreaInPixels                = int()
         self.HematoxylinPixelDensity                = np.array([])
 
@@ -57,7 +57,7 @@ class CompositeStatistics:
         self.HematoxylinDensitySDs                  = float()
         self.HematoxylinDensityMedians              = float()
 
-        print('Define Image wide stats class')
+        # print('Define Image wide stats class')
         self.Hematoxylin_Image_Count                = int()
         self.Hematoxylin_Image_Mean                 = float()
         self.Hematoxylin_Image_Standard_deviation   = float()
@@ -67,7 +67,7 @@ class CompositeStatistics:
         self.Hematoxylin_Image_75_Percent           = float()
         self.Hematoxylin_Image_Max                  = float()
 
-        print('Define Eosin Info Class Variables')
+        # print('Define Eosin Info Class Variables')
         self.EosinAreaInPixels                      = int()
         self.EosinPixelDensity                      = np.array([])
 
@@ -83,7 +83,7 @@ class CompositeStatistics:
         self.EosinDensitySDs                        = float()
         self.EosinDensityMedians                    = float()
 
-        print('Define Image wide stats class')
+        # print('Define Image wide stats class')
         self.Eosin_Image_Count                      = int()
         self.Eosin_Image_Mean                       = float()
         self.Eosin_Image_Standard_deviation         = float()
@@ -101,11 +101,11 @@ class CompositeStatistics:
         GREEN_COLOR                             = 1
         BLUE_COLOR                              = 2
 
-        print('Define Image Info Variables')
+        # print('Define Image Info Variables')
         SlideImageName                          = str()
         LabelMapImageName                       = str()
 
-        print('Define Hematoxylin Info Variables')
+        # print('Define Hematoxylin Info Variables')
         HematoxylinAreaInPixels                 = int()
         HematoxylinPixelDensity                 = np.array([])
 
@@ -121,7 +121,7 @@ class CompositeStatistics:
         HematoxylinDensitySDs                   = float()
         HematoxylinDensityMedians               = float()
 
-        print('Define Image wide stats')
+        # print('Define Image wide stats')
         Hematoxylin_Image_Count                 = int()
         Hematoxylin_Image_Mean                  = float()
         Hematoxylin_Image_Standard_Deviation    = float()
@@ -131,7 +131,7 @@ class CompositeStatistics:
         Hematoxylin_Image_75_Percent            = float()
         Hematoxylin_Image_Max                   = float()
 
-        print('Define Eosin Info Variables')
+        # print('Define Eosin Info Variables')
         EosinAreaInPixels                       = int()
         EosinPixelDensity                       = np.array([])
 
@@ -147,7 +147,7 @@ class CompositeStatistics:
         EosinDensitySDs                         = float()
         EosinDensityMedians                     = float()
 
-        print('Define Image wide stats')
+        # print('Define Image wide stats')
         Eosin_Image_Count                       = int()
         Eosin_Image_Mean                        = float()
         Eosin_Image_Standard_Deviation          = float()
@@ -319,15 +319,14 @@ def GetArguments():
 # Output: gray level label
 
 def ExcludeFeatureLabels(ExcludingFeatureList):
-    GRAY_LEVEL_VALID_LABELS_TUPLE       = ('Leading Edge',
-                                           'Infiltrating Tumor',
-                                           'Cellular Tumor',
-                                           'Necrosis',
-                                           'Perinecrotic Zone',
-                                           'Pseudopolisading Cells around Necrosis',
-                                           'Pseudopolisading Cells but no visible Necrosis',
-                                           'Hyperplastic Blood',
-                                           'Microvascular Proliferation'
+    GRAY_LEVEL_VALID_LABELS_TUPLE       = ('White/Background',
+                                           'Spindled Patterns',
+                                           'Pale and Yellow Cellularity',
+                                           'High Cellular with Vacuoles',
+                                           'Dense Cellular (Pronounced Vessels)',
+                                           'Large Vessels (often Cauterized)',
+                                           'Tissue Edges (Hemorrahic)',
+                                           'Medium Cellularity'
                                            )
     EXCLUDING_LABELS_NAMES_REGEX        = '((?:\w+\s?){0,6}),?'
     FeatureName           = str()
@@ -445,7 +444,7 @@ def FindAndLabelUniquePixels(MapDataFrame, ImageLabelMap):  # Pixel by pixel fin
 
     for UniqueColor in UniqueColors:
         print('Search for pixel color matches in Label Map Legend file') # Rather than using a single line, code below is more readable
-        #
+
         SeriesOfInterest        = MapDataFrame[GRAY_LEVEL_COLUMN_TITLE]
         BooleanSeriesOfInterest = SeriesOfInterest.isin([UniqueColor])
         FoundPixelInLabelMap    = MapDataFrame[BooleanSeriesOfInterest]
@@ -634,7 +633,7 @@ def ExecuteDeconvolution(SlideImage,LabelMapImage):
 
     print('List of colors present in the label map. Find all pixels with features')
     PixelsFeaturesInImageDataFrame = FindAndLabelUniquePixels(GrayLevelLabelMapDataFrame, LabelMapImage)
-    #
+
     print('Check for existing feature areas')
     if not PixelsFeaturesInImageDataFrame.empty:
 
@@ -657,9 +656,9 @@ def ExecuteDeconvolution(SlideImage,LabelMapImage):
                 print('Add feature statistics to output list')
                 MainList               += ClassDataToList(Statistics)  # Concatenating lists is cheaper than dataframes
                 print('Update feature counter')
-                #
+
             else:
-                #
+
                 print('Discarded Feature: \"{}\", Gray level color: \"{}\"'.format(Feature, GrayLevel))
     else:
         print('Empty dataframe, no unique colors found')
@@ -692,7 +691,7 @@ def ApplyingFilters(SlideImage, SlideImageName, Statistics, LabelMapImage, Label
 
         print('Applying white mask to RGB image')
         NewImage    = np.where(WhiteMask[...,None], SlideImage, WHITE_COLOR)
-        #
+
         Statistics.ImageComposite(SlideImageName,LabelMapImageName,Feature,NewImage)
 
     else:

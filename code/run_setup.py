@@ -1,6 +1,6 @@
 #----------Get images maps from the list of Verified images---------------
 
-from setup_utils import *
+from utils import *
 import pandas as pd
 import random
 from tqdm import tqdm
@@ -69,9 +69,8 @@ print("All images and maps copied")
 
 from skimage.io import imread
 import matplotlib.pyplot as plt
-# from setup_utils import get_pi_value_count
 from PIL import Image
-from setup_utils import *
+from utils import *
 import pandas as pd
 import random
 from tqdm import tqdm

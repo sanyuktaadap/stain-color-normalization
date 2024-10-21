@@ -7,8 +7,35 @@ from skimage.io import imread
 from PIL import Image
 from tqdm import tqdm
 import glob
+import pickle
 
 Image.MAX_IMAGE_PIXELS = None
+
+def save_file(src, dest, format):
+    if format == '.png' or format == '.jpg':
+        src.save(f"{dest}.jpg")
+
+    if format == ".npy":
+        np.save(f"{dest}_VGG16_256.npy", src, allow_pickle=True)
+
+    if format == ".pkl":
+        with open(f"{dest}.pkl", 'wb') as f:
+            pickle.dump(src, f)
+
+def load_file(path):
+    if path.endswith('.csv'):
+        file = pd.read_csv(path)
+        return file
+
+    if path.endswiht('.npy'):
+        file = np.load(path, allow_pickle=True)
+        return file
+
+    if path.endswith(".pkl"):
+        with open(path, 'rb') as pickle_file:
+            file = pickle.load(pickle_file)
+        return file
+
 
 def randomly_select_maps(maps_folder, destination_folder, num_images=120):
     maps_list = glob.glob(os.path.join(maps_folder, '*'))

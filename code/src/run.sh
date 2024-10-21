@@ -3,16 +3,16 @@ set -ex
 
 # Images, image maps, tissue to exclude, and output dataframe name
 Image_Array=($(ls ./data/for_normalization/Images))
-Image_Map_Array=($(ls ./data/for_normalization/Image_Maps/))
+Image_Map_Array=($(ls ./data/for_normalization/KM_Masks/))
 All_Images_Array=($(ls ./data/Images))
 Excluding_Labels=("") # if any
 
 # File Paths
 Python_Scripts_Directory="./code/src/"
 Images_Directory="./data/for_normalization/Images/"
-Image_Maps_Directory="./data/for_normalization/Image_Maps/"
+Image_Maps_Directory="./data/for_normalization/KM_Masks/"
 Gray_Level_Labels_Directory="./data/Csv_Files/"
-Output_Files="./results/"
+Output_Files="./results/clustering/"
 
 # Other variables
 Training_Time=10
@@ -48,11 +48,11 @@ for image in ${Image_Array[@]}; do
 done
 
 # Create Directories
-mkdir -p ./results/Images_Histograms_DataFrames
-mkdir -p ./results/Images_Stain_Stats_DataFrames
-mkdir -p ./results/Normalization_Parameters
-mkdir -p ./results/Normalized_Images
-mkdir -p ./results/Normalization_Parameters/${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters
+mkdir -p ./results/clustering/Images_Histograms_DataFrames
+mkdir -p ./results/clustering/Images_Stain_Stats_DataFrames
+mkdir -p ./results/clustering/Normalization_Parameters
+mkdir -p ./results/clustering/Normalized_Images
+mkdir -p ./results/clustering/Normalization_Parameters/${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters
 
 # 1) Calculate stain vectors and histogram for each image and store info in a dataframe
 
@@ -64,7 +64,7 @@ for i in ${!Image_Array[@]}; do
     python $Python_Scripts_Directory"1-Produce_Image_Stain_Vectors_and_Optical_Density.py" \
     --Slide_Image                $Images_Directory${Image_Array[$i]} \
     --Label_Map_Image            $Image_Maps_Directory${Image_Map_Array[$i]} \
-    --Gray_Level_To_Label_Legend $Gray_Level_Labels_Directory"LV_Gray_Level_to_Label.csv" \
+    --Gray_Level_To_Label_Legend $Gray_Level_Labels_Directory"New_Gray_Level_to_Label.csv" \
     --Output_Dataframe_File      $Output_Files${Output_Dataframe_Name[$i]} \
     --Excluding_Labels           "${Excluding_Labels[0]}" \
     --Bin_Size                   $Knuth_Bin_Size \
