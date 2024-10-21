@@ -5,6 +5,7 @@ import os
 import glob
 from tqdm import tqdm
 import argparse
+from utils import save_file
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -48,16 +49,41 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
         # Loop through the image and extract patches along with their coordinates
         for i in range(0, height, patch_size):
             for j in range(0, width, patch_size):
-                # Extract the patch
-                patch = image[i:i+patch_size, j:j+patch_size, :]
-                # Pad with white pixels only if the patch is smaller than half of the desired patchsize
-                if patch.shape[0] < patch_size or patch.shape[1] < patch_size:
+                # Extract the patch when both height and width exceed the image size
+                if i + patch_size > height and j + patch_size > width:
+                    patch = image[i:, j:, :]  # Extract remaining part of both dimensions
                     patch = np.pad(
                         patch,
                         ((0, max(0, patch_size - patch.shape[0])), (0, max(0, patch_size - patch.shape[1])), (0, 0)),
                         mode='constant',
                         constant_values=255
                     )
+
+                # Extract the patch when only height exceeds the image size
+                elif i + patch_size > height:
+                    patch = image[i:, j:j + patch_size, :]  # Extract remaining part of height only
+                    patch = np.pad(
+                        patch,
+                        ((0, max(0, patch_size - patch.shape[0])), (0, 0), (0, 0)),  # Pad only height
+                        mode='constant',
+                        constant_values=255
+                    )
+
+                # Extract the patch when only width exceeds the image size
+                elif j + patch_size > width:
+                    patch = image[i:i + patch_size, j:, :]  # Extract remaining part of width only
+                    patch = np.pad(
+                        patch,
+                        ((0, 0), (0, max(0, patch_size - patch.shape[1])), (0, 0)),  # Pad only width
+                        mode='constant',
+                        constant_values=255
+                    )
+
+                # Extract the patch when neither dimension exceeds the image size (no padding needed)
+                else:
+                    patch = image[i:i + patch_size, j:j + patch_size, :]  # Fully within bounds, no padding
+
+                assert patch.shape == (256, 256, 3)
 
                 # Discarding patches that have more than 50% of white pixels
                 if intensity_thresh is not None:
@@ -72,9 +98,9 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
                         continue
 
                 patches.append(patch)
-                coordinates.append((i, j))  # Store the top-left corner (i, j) of the patch
+                coordinates.append((i, j))  # Stores the top-left corner (i, j) of the patch
 
-        print(f"Total patches: {len(patches)}")
+        print(f"Total patches extracted: {len(patches)}")
         # Save patches and coordinates in HDF5 format
         image_name = image_path.split("/")[-1]
         image_name = image_name.split(".")[0]
@@ -140,4 +166,4 @@ if __name__ == "__main__":
 
     # (Optional) Stitch patches back
     # reconstructed_image = stitch_patches(hdf5_file, original_size, patch_size)
-    # reconstructed_image.save("reconstructed_image.jpg")
+    # save_file(reconstructed_image, reconstructed_image, ".jpg")
