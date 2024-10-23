@@ -10,6 +10,7 @@ Excluding_Labels=("") # if any
 # File Paths
 Python_Scripts_Directory="./code/src/"
 Images_Directory="./data/for_normalization/Images/"
+All_Images_Directory="./data/Images/"
 Image_Maps_Directory="./data/for_normalization/KM_Masks/"
 Gray_Level_Labels_Directory="./data/Csv_Files/"
 Output_Files="./results/clustering/"
@@ -89,7 +90,7 @@ for i in ${!All_Images_Array[@]}; do
     echo "Normalize image using aggregated parameters         "
     echo "----------------------------------------------------"
     python $Python_Scripts_Directory"3-Normalize_Image.py"\
-    --Image_To_Normalize         $Images_Directory${All_Images_Array[$i]} \
+    --Image_To_Normalize         $All_Images_Directory${All_Images_Array[$i]} \
     --Normalizing_Histogram      $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortHistograms.npy \
     --Normalizing_Stain_Vectors  $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortStainVectors.npy \
     --Output_Directory           $Output_Files"Normalized_Images" \

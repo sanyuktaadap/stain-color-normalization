@@ -417,8 +417,6 @@ def FindStainVectors(Data):
 
     print('Normalize vector')
     StainVectors      = normalize_rows(StainVectors)
-
-    print('need to find H&E order by looking at color ratios')
     StainVectorOutput = SortOutStainVectors(StainVectors)
 
     return StainVectorOutput

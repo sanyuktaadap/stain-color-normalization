@@ -36,12 +36,10 @@ GrayLevelLabelMapDataFrame  = pd.DataFrame()
 # This class is initialized to store various statistical metrics related to the image
 class CompositeStatistics:
     def __init__(self):
-        # print('Define Image Info Class Variables')
         self.SlideImageName                         = str()
         self.LabelMapImageName                      = str()
         self.FeatureName                            = str()
 
-        # print('Define Hematoxylin Info Class Variables')
         self.HematoxylinAreaInPixels                = int()
         self.HematoxylinPixelDensity                = np.array([])
 
@@ -57,7 +55,6 @@ class CompositeStatistics:
         self.HematoxylinDensitySDs                  = float()
         self.HematoxylinDensityMedians              = float()
 
-        # print('Define Image wide stats class')
         self.Hematoxylin_Image_Count                = int()
         self.Hematoxylin_Image_Mean                 = float()
         self.Hematoxylin_Image_Standard_deviation   = float()
@@ -67,7 +64,6 @@ class CompositeStatistics:
         self.Hematoxylin_Image_75_Percent           = float()
         self.Hematoxylin_Image_Max                  = float()
 
-        # print('Define Eosin Info Class Variables')
         self.EosinAreaInPixels                      = int()
         self.EosinPixelDensity                      = np.array([])
 
@@ -83,7 +79,6 @@ class CompositeStatistics:
         self.EosinDensitySDs                        = float()
         self.EosinDensityMedians                    = float()
 
-        # print('Define Image wide stats class')
         self.Eosin_Image_Count                      = int()
         self.Eosin_Image_Mean                       = float()
         self.Eosin_Image_Standard_deviation         = float()
@@ -101,11 +96,9 @@ class CompositeStatistics:
         GREEN_COLOR                             = 1
         BLUE_COLOR                              = 2
 
-        # print('Define Image Info Variables')
         SlideImageName                          = str()
         LabelMapImageName                       = str()
 
-        # print('Define Hematoxylin Info Variables')
         HematoxylinAreaInPixels                 = int()
         HematoxylinPixelDensity                 = np.array([])
 
@@ -338,18 +331,15 @@ def ExcludeFeatureLabels(ExcludingFeatureList):
     if ExcludingFeatureList:
         print('Find all features to exclude')
         GroupList = re.findall(EXCLUDING_LABELS_NAMES_REGEX,ExcludingFeatureList)
-        print('Scan list of excluding features')
         for FeatureName in GroupList:
-            print('Delete feature')
+            print(f'Excluding feature: {FeatureName}')
             if FeatureName in GRAY_LEVEL_VALID_LABELS_TUPLE:
                 FeatureIndex = NewGrayLevelLabelList.index(FeatureName)
-                print('Excluding feature: {}'.format(FeatureName))
                 NewGrayLevelLabelList.pop(FeatureIndex)
     else:
         print('No features to exclude')
         NewGrayLevelLabelList = GRAY_LEVEL_VALID_LABELS_TUPLE
 
-    print('Surviving features:\n\t{}'.format(NewGrayLevelLabelList))
 
     return NewGrayLevelLabelList
 
@@ -360,10 +350,8 @@ def ExcludeFeatureLabels(ExcludingFeatureList):
 
 def CreateDirectory(OutputPath):
     try:
-        print('Creating directory:\n{}'.format(OutputPath))
         Path(OutputPath).mkdir(parents=True, exist_ok=True)
     except:
-        print('Could not created directory:\n{}'.format(OutputPath))
         raise IOError()
     return str(OutputPath)
 
@@ -380,7 +368,6 @@ def ImportGrayLevelLegendData(SpreadsheetPath,GreyLevelLabels):
     IndexedNewGrayLevelLegendData = pd.DataFrame()
 
     try:
-        print('\tLoading Gray Level Legend File: ../{}'.format(Path(SpreadsheetPath).name))
         GrayLevelLegendData = pd.read_csv(SpreadsheetPath)
     except:
         print('No graylevel file data retrieved')
@@ -389,7 +376,6 @@ def ImportGrayLevelLegendData(SpreadsheetPath,GreyLevelLabels):
     print('Delete unwanted rows')
     TrimmedGrayLevelLegendData    = GrayLevelLegendData[GrayLevelLegendData.FeatureLabel.isin(GreyLevelLabels)]
 
-    print('Index data frame by Label')
     IndexedNewGrayLevelLegendData = TrimmedGrayLevelLegendData.set_index(FEATURE_LABEL_COLUMN_TITLE)
 
     return IndexedNewGrayLevelLegendData
@@ -443,13 +429,10 @@ def FindAndLabelUniquePixels(MapDataFrame, ImageLabelMap):  # Pixel by pixel fin
     UniqueColors = np.unique(ImageLabelMap)
 
     for UniqueColor in UniqueColors:
-        print('Search for pixel color matches in Label Map Legend file') # Rather than using a single line, code below is more readable
-
         SeriesOfInterest        = MapDataFrame[GRAY_LEVEL_COLUMN_TITLE]
         BooleanSeriesOfInterest = SeriesOfInterest.isin([UniqueColor])
         FoundPixelInLabelMap    = MapDataFrame[BooleanSeriesOfInterest]
 
-        print('If a match is found, collect results')
         if BooleanSeriesOfInterest.any():
             print('Found Grey Level pixel \"{}\" for feature: {}'.format(UniqueColor,FoundPixelInLabelMap.index[FIRST_ITEM]))
             FeaturesFoundInImage = pd.concat([FeaturesFoundInImage, FoundPixelInLabelMap])
