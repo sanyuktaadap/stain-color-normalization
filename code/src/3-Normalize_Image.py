@@ -13,6 +13,7 @@ import argparse
 import itertools
 import Utilities
 import skimage.io
+import os
 import numpy               as np
 import dask.array          as da
 from PIL                   import Image
@@ -450,23 +451,28 @@ if __name__ == "__version__":
 if __name__ == "__main__":
 
     InputArguments          = GetArguments()
+    name = InputArguments.Image_To_Normalize.split("/")[-1]
+    name = name.split(".")[0] + "_Normalized.png"
+    path = os.path.join(InputArguments.Output_Directory, name)
+    if os.path.exists(path):
+        print(f"Image already Normalized at {path}")
+    else:
+        StartTimer = datetime.now()
+        TimeStamp  = 'Start Time (hh:mm:ss.ms) {}'.format(StartTimer)
+        print(TimeStamp)
+        #------------------------------------------------------------------------------------------------
+        NormalizedImage         = da.from_array([], chunks='200MiB')
 
-    StartTimer = datetime.now()
-    TimeStamp  = 'Start Time (hh:mm:ss.ms) {}'.format(StartTimer)
-    print(TimeStamp)
-    #------------------------------------------------------------------------------------------------
-    NormalizedImage         = da.from_array([], chunks='200MiB')
+        OutputFilePath          = Initialize()
 
-    OutputFilePath          = Initialize()
+        ImageToNormalize,\
+        NormalizingHistogram,\
+        NormalizingStainVectors = LoadInputFiles()
 
-    ImageToNormalize,\
-    NormalizingHistogram,\
-    NormalizingStainVectors = LoadInputFiles()
+        NormalizedImage         = NormalizeImage(ImageToNormalize,NormalizingHistogram,NormalizingStainVectors)
 
-    NormalizedImage         = NormalizeImage(ImageToNormalize,NormalizingHistogram,NormalizingStainVectors)
-
-    Terminate(OutputFilePath,NormalizedImage,ImageToNormalize,NormalizingStainVectors)
-    #------------------------------------------------------------------------------------------------
-    TimeElapsed = datetime.now() - StartTimer
-    TimeStamp   = 'Time elapsed (hh:mm:ss.ms) {}\n'.format(TimeElapsed)
-    print(TimeStamp)
+        Terminate(OutputFilePath,NormalizedImage,ImageToNormalize,NormalizingStainVectors)
+        #------------------------------------------------------------------------------------------------
+        TimeElapsed = datetime.now() - StartTimer
+        TimeStamp   = 'Time elapsed (hh:mm:ss.ms) {}\n'.format(TimeElapsed)
+        print(TimeStamp)
