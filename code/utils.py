@@ -27,7 +27,7 @@ def load_file(path):
         file = pd.read_csv(path)
         return file
 
-    if path.endswiht('.npy'):
+    if path.endswith('.npy'):
         file = np.load(path, allow_pickle=True)
         return file
 
