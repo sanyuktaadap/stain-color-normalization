@@ -63,18 +63,16 @@ if __name__ == "__main__":
             os.makedirs(f"{clust_label}", exist_ok=True)
 
             patch_lis = patch.split("_")
-            x, y = int(patch_lis[1]), int(patch_lis[2])
+            i, j = int(patch_lis[1]), int(patch_lis[2])
 
-            if os.path.exists(os.path.join(clust_label, f"{name}_{x}_{y}.png")):
+            if os.path.exists(os.path.join(clust_label, f"{name}_{i}_{j}.png")):
                 continue
 
-            patch = image.crop((x, y, x+patch_size, y+patch_size))
+            # PIL Image expects width first and height later
+            patch = image.crop((j, i, j + patch_size, i + patch_size))
 
-            patch = np.array(patch)
-            patch_image = Image.fromarray(patch)
-
-            save_file(patch_image,
-                    os.path.join(clust_label, f"{name}_{x}_{y}"),
+            save_file(patch,
+                    os.path.join(clust_label, f"{name}_{i}_{j}"),
                     ".png")
 
             patches_till_now += 1

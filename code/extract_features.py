@@ -21,13 +21,13 @@ from torchvision import transforms as T
 from torchvision import models
 
 
-def get_wsi_features_all_patches(patient_id, n, model, patch_size, slide_dir, ds_arr, preprocess, device):
+def get_wsi_features_all_patches(patient_id, n_patches, model, patch_size, slide_dir, ds_arr, preprocess, device):
     """
     Extracts features from all patches of a given WSI using the specified model.
 
     Parameters:
     - patient_id: str, ID of the patient (corresponding to the slide file name).
-    - n: int, number of patches to process.
+    - n_patches: int, number of patches to process.
     - model: pre-trained model for feature extraction.
     - patch_size: int, Patch size.
     - slide_dir: str, directory where the slide images are located.
@@ -42,22 +42,23 @@ def get_wsi_features_all_patches(patient_id, n, model, patch_size, slide_dir, ds
 
     model.to(device)
 
-    for i in tqdm(range(n)):
-        slide = Image.open(os.path.join(slide_dir, f'{patient_id}.jpg'))
-        x, y = ds_arr[i]
-        patches_list.append(f'{patient_id}_{x}_{y}')
-        patch = slide.crop((x, y, x + patch_size, y + patch_size)).convert('RGB')
+    slide = Image.open(os.path.join(slide_dir, f'{patient_id}.jpg'))
+
+    for patch_idx in tqdm(range(n_patches)):
+        # Reading patch coords as i=h, j=w
+        i, j = ds_arr[patch_idx]
+        patches_list.append(f'{patient_id}_{i}_{j}')
+        # PIL Image expects width first and height later
+        patch = slide.crop((j, i, j + patch_size, i + patch_size)).convert('RGB')
         patch = preprocess(patch)
         patch = patch.unsqueeze(0)
         patch = patch.to(device)
         with torch.no_grad():
             feature = model(patch)
-
         feature_vector = torch.mean(feature, dim=[2, 3])  # Global average pooling
-        pooled_featuremap = feature_vector.squeeze(0)
+        pooled_featuremap = feature_vector.squeeze(0).detach().cpu()
 
         combine_features.append(pooled_featuremap)
-        slide.close()
 
     combine_features_np = np.array([feature.cpu().numpy() for feature in combine_features])
     combine_stack = np.vstack(combine_features_np)
@@ -74,55 +75,3 @@ def dimensionality_reduction(features, n_components=10):
 
     print(f'Reduced Feature Shape: {reduced_features.shape}')
     return reduced_features
-
-
-if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser(description='Extract features from WSI patches.')
-    parser.add_argument('--slide_dir', type=str, required=True, help='Directory where the slide images are located.')
-    parser.add_argument('--csv_path', type=str, required=True, help='Path to the CSV file containing slide IDs.')
-    parser.add_argument('--root_dir', type=str, required=True, help='Root directory for saving the extracted features.')
-    parser.add_argument('--output_dir', type=str, required=True, help='Root directory for saving the extracted features.')
-    args = parser.parse_args()
-
-    Image.MAX_IMAGE_PIXELS = None
-
-    image_id = pd.read_csv(args.csv_path)['slide_id'].to_list()
-
-    # Load the pre-trained VGG16 model
-    model = models.vgg16(pretrained=True)
-
-    # Step 1: Modify the model to remove the last pooling layer
-    model = torch.nn.Sequential(*list(model.features.children())[:-1])
-    model.eval()
-
-    patch_size = 256
-
-    for patient_id in tqdm(image_id):
-        foldername = os.path.join(args.slide_dir, patient_id)
-        folder_name = os.path.basename(foldername)
-        print(folder_name)
-        attr_dict = {}
-        with h5py.File(f'{foldername}.h5', "r") as f:
-            a_group_key = list(f.keys())[0]
-            ds_arr = f[a_group_key][()]
-            for k, v in f[a_group_key].attrs.items():
-                attr_dict[k] = v
-
-        total_patches = len(ds_arr)
-        print(f'Total patches: {total_patches}')
-
-        preprocess = T.Compose([
-            T.ToPILImage()(),
-            T.Resize(size=256),
-            T.ToTensor(),
-        ])
-
-        wsi_featuremap, patches_list = get_wsi_features_all_patches(folder_name, total_patches, fe, patch_size, args.slide_dir, ds_arr, preprocess)
-        output_dir = os.path.join(args.root_dir, args.output_dir, folder_name)
-        os.makedirs(output_dir, exist_ok=True)
-
-        np.save(os.path.join(output_dir, f'{folder_name}_VGG16_256.npy'), wsi_featuremap, allow_pickle=True)
-        with open(os.path.join(output_dir, f'{folder_name}_VGG16_256_patches_list.pkl'), 'wb') as f:
-            pickle.dump(patches_list, f)

@@ -13,7 +13,13 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
     """
     Extracts patches of a given size from images in a folder and stores them, along with their coordinates,
     in HDF5 format. It also discards patches that contain more than a certain percentage of white pixels
-    (based on an intensity threshold).
+    based on an intensity threshold.
+
+    Steps:
+        - Load each image.
+        - Extract non-overlapping patches of size `patch_size`.
+        - Filter out patches with more than 50% of white pixels.
+        - Store the patches and their top-left coordinates in HDF5 format.
 
     Args:
         images_folder (str): The path to the folder containing the images.
@@ -22,12 +28,6 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
         intensity_thresh (int): The pixel intensity threshold used to filter out mostly white patches.
                                 Patches with more than 50% of pixels having intensity above this threshold
                                 are discarded. If None, intensity thresholding is not applied.
-
-    Steps:
-        - Load each image.
-        - Extract non-overlapping patches of size `patch_size`.
-        - Filter out patches with more than 50% of white pixels.
-        - Store the patches and their top-left coordinates in HDF5 format.
     """
 
     image_paths = glob.glob(os.path.join(images_folder, "*"))
@@ -35,7 +35,9 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
     for i, image_path in enumerate(tqdm(image_paths)):
         print(f"{i+1}/{total} : {image_path}")
         # Load the image
+        # PIL Image opens it as width, height
         image = Image.open(image_path)
+        # Numpy Array reads the image as height(rows), width(columns)
         image = np.array(image)
 
         # Get image dimensions

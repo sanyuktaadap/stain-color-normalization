@@ -53,24 +53,24 @@ if __name__ == "__main__":
     image_id = load_file(csv_path)['slide_id'].tolist()
     total_images = len(image_id)
 
-    # Step 1: Extract patches with coordinates
-    images = os.listdir(images_folder)
-    print(f"------- Patching {len(images)} slides -------")
-    extract_patches(images_folder, patch_size, hdf5_folder)
-    print(f"Patches saved in {hdf5_folder}\n\n")
+    # # Step 1: Extract patches with coordinates
+    # images = os.listdir(images_folder)
+    # print(f"------- Patching {len(images)} slides -------")
+    # extract_patches(images_folder, patch_size, hdf5_folder)
+    # print(f"Patches saved in {hdf5_folder}\n\n")
 
     # Step 2: Extract Features
     # Load the pre-trained VGG16 model
     model = models.vgg16(pretrained=True)
-
     model = torch.nn.Sequential(*list(model.features.children())[:-1])
     model.eval()
+    model = model.cuda()
 
     total_images = len(image_id)
 
     print(f"------- Starting Feature Extraction -------")
 
-    for i, patient_id in enumerate(image_id[::-1]):
+    for i, patient_id in enumerate(image_id):
         name = patient_id.split(".")[0]
         path = os.path.join(feat_dir, name)
         print(f"{i+1}/{total_images} - {name}")
@@ -94,7 +94,15 @@ if __name__ == "__main__":
             T.ToTensor(),
         ])
 
-        wsi_featuremap, patches_list = get_wsi_features_all_patches(patient_id, total_patches, model, patch_size, images_folder, ds_arr, preprocess, device)
+        wsi_featuremap, patches_list = get_wsi_features_all_patches(patient_id,
+                                                                    total_patches,
+                                                                    model,
+                                                                    patch_size,
+                                                                    images_folder,
+                                                                    ds_arr,
+                                                                    preprocess,
+                                                                    device)
+
         output_dir = os.path.join(feat_dir, patient_id)
         os.makedirs(output_dir, exist_ok=True)
 
@@ -167,13 +175,15 @@ if __name__ == "__main__":
     patches_till_now = 0
     labels_dict = {0:1, 1:2, 2:3, 3:4, 4:5, 5:6, 6:7}
 
-    for i, patient_id in tqdm(enumerate(image_id)):
+    for idx, patient_id in tqdm(enumerate(image_id)):
         image = Image.open(os.path.join(images_folder, patient_id))
-        h, w = image.size
-        empty_mask = np.zeros((w, h), dtype=np.uint8)
+        # PIL Image opens it as width, height
+        w, h = image.size
+        # Numpy Array has height(rows) first and width(columns)
+        empty_mask = np.zeros((h, w), dtype=np.uint8)
 
         name = patient_id.split(".")[0]
-        print(f"{i+1}/{total_images} - {name}")
+        print(f"{idx+1}/{total_images} - {name}")
         patches_path_file = os.path.join(feat_dir,
                                          name,
                                          f"{name}_VGG16_{patch_size}_patches_path.pkl")
@@ -183,16 +193,15 @@ if __name__ == "__main__":
             patch_label = labels[patches_till_now]
 
             patch_lis = patch.split("_")
-            x, y = int(patch_lis[1]), int(patch_lis[2])
-            patch = image.crop((x, y, x+patch_size, y+patch_size))
+            i, j = int(patch_lis[1]), int(patch_lis[2])
+            patch = image.crop((j, i, j + patch_size, i + patch_size))
 
-            empty_mask[x: x + patch_size, y: y + patch_size] = labels_dict[patch_label]
+            empty_mask[i: i + patch_size, j: j + patch_size] = labels_dict[patch_label]
 
             patches_till_now += 1
 
         # Convert the mask to an image and save it as PNG
         mask_image = Image.fromarray(empty_mask)
-        mask_image.save()
         save_file(mask_image,
                   os.path.join(mask_fold, f"{name}_mask"),
                   ".png")
