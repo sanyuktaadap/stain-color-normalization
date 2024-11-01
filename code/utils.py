@@ -13,13 +13,13 @@ Image.MAX_IMAGE_PIXELS = None
 
 def save_file(src, dest, format):
     if format == '.png' or format == '.jpg':
-        src.save(f"{dest}.jpg")
+        src.save(f"{dest}{format}")
 
     if format == ".npy":
-        np.save(f"{dest}_VGG16_256.npy", src, allow_pickle=True)
+        np.save(f"{dest}{format}", src, allow_pickle=True)
 
     if format == ".pkl":
-        with open(f"{dest}.pkl", 'wb') as f:
+        with open(f"{dest}{format}", 'wb') as f:
             pickle.dump(src, f)
 
 def load_file(path):

@@ -29,10 +29,13 @@ if __name__ == "__main__":
     # Feature extraction arguments
     parser.add_argument('--csv_path', type=str, default="data/for_normalization/slides_list.csv", help='Path to the CSV file containing slide IDs.')
     parser.add_argument('--feat_dir', type=str, default="data/for_normalization/features", help='Directory for saving the extracted features.')
-    parser.add_argument('--clust_dir', type=str, default='data/for_normalization/clustering_results')
+    # Dimensionality Reduction Arguments
     parser.add_argument('--n_comp', type=int, default=32, help='Number of components for PCA.')
+    # Clustering Arguments
+    parser.add_argument('--clust_dir', type=str, default='data/for_normalization/clustering_results')
     parser.add_argument('--n_clust', type=int, default=7, help='Number of clusters for K-Means')
-    parser.add_argument('--mask_fold',  type=str, default='data/for_normalization/KM_Masks')
+    # Unsupervised Mask Folder
+    parser.add_argument('--mask_fold',  type=str, default='data/for_normalization/KM_Masks', help='Directory for saving created masks')
 
     args = parser.parse_args()
 
@@ -53,11 +56,11 @@ if __name__ == "__main__":
     image_id = load_file(csv_path)['slide_id'].tolist()
     total_images = len(image_id)
 
-    # # Step 1: Extract patches with coordinates
-    # images = os.listdir(images_folder)
-    # print(f"------- Patching {len(images)} slides -------")
-    # extract_patches(images_folder, patch_size, hdf5_folder)
-    # print(f"Patches saved in {hdf5_folder}\n\n")
+    # Step 1: Extract patches with coordinates
+    images = os.listdir(images_folder)
+    print(f"------- Patching {len(images)} slides -------")
+    extract_patches(images_folder, patch_size, hdf5_folder)
+    print(f"Patches saved in {hdf5_folder}\n\n")
 
     # Step 2: Extract Features
     # Load the pre-trained VGG16 model
@@ -140,7 +143,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Load wsi_featuremap from the .npy file
-    combined_features = load_file(os.path.join(feat_dir, f'combined_feature_maps.npy'))
+    combined_features = load_file(os.path.join(feat_dir, f'combined_feature_maps_VGG16_{patch_size}.npy'))
 
     reduced_features = dimensionality_reduction(combined_features, n_comp)
 
