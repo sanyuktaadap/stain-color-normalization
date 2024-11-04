@@ -37,12 +37,13 @@ custom_sort() {
 
 # Sort Image_Map_Array based on the slide number
 sorted_Image_Map_Array=($(printf "%s\n" "${Image_Map_Array[@]}" | sort -t '_' -k 4,4n -k 5,5n -k 6,6n -k 7,7n))
+sorted_Image_Array=($(printf "%s\n" "${Image_Array[@]}" | sort -t '_' -k 4,4n -k 5,5n -k 6,6n -k 7,7n))
 
 # Verify the sorted array
 Image_Map_Array=("${sorted_Image_Map_Array[@]}")
 # Excluding_Labels=("")
 Output_Dataframe_Name=()
-for image in ${Image_Array[@]}; do
+for image in ${sorted_Image_Array[@]}; do
     filename=$(basename "$image")
     filename_without_extension="${filename%.*}"
     Output_Dataframe_Name+=("Dataframe_${filename_without_extension}")
@@ -53,17 +54,17 @@ mkdir -p ./results/clustering/Images_Histograms_DataFrames
 mkdir -p ./results/clustering/Images_Stain_Stats_DataFrames
 mkdir -p ./results/clustering/Normalization_Parameters
 mkdir -p ./results/clustering/Normalized_Images
-mkdir -p ./results/clustering/Normalization_Parameters/${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters
+mkdir -p ./results/clustering/Normalization_Parameters/${#sorted_Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters
 
 # 1) Calculate stain vectors and histogram for each image and store info in a dataframe
 
-for i in ${!Image_Array[@]}; do
+for i in ${!sorted_Image_Array[@]}; do
     echo "----------------------------------------------------"
     echo "Generate pandas dataframes containing stain vectors "
     echo "and optical density for each cohort image           "
     echo "----------------------------------------------------"
     python $Python_Scripts_Directory"1-Produce_Image_Stain_Vectors_and_Optical_Density.py" \
-    --Slide_Image                $Images_Directory${Image_Array[$i]} \
+    --Slide_Image                $Images_Directory${sorted_Image_Array[$i]} \
     --Label_Map_Image            $Image_Maps_Directory${Image_Map_Array[$i]} \
     --Gray_Level_To_Label_Legend $Gray_Level_Labels_Directory"New_Gray_Level_to_Label.csv" \
     --Output_Dataframe_File      $Output_Files${Output_Dataframe_Name[$i]} \
@@ -81,7 +82,7 @@ python $Python_Scripts_Directory"2-Aggregate_Stain_Vectors_and_Histograms.py" \
 --Histogram_Dataframe_Directory    $Output_Files"Images_Histograms_DataFrames" \
 --Stain_Vector_Dataframe_Directory $Output_Files"Images_Stain_Stats_DataFrames" \
 --Output_Directory                 $Output_Files"Normalization_Parameters" \
---Number_of_Images                 ${#Image_Array[@]}
+--Number_of_Images                 ${#sorted_Image_Array[@]}
 
 # 3) Normalize each image using aggregated stain vectors and histogram
 
@@ -91,8 +92,8 @@ for i in ${!All_Images_Array[@]}; do
     echo "----------------------------------------------------"
     python $Python_Scripts_Directory"3-Normalize_Image.py"\
     --Image_To_Normalize         $All_Images_Directory${All_Images_Array[$i]} \
-    --Normalizing_Histogram      $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortHistograms.npy \
-    --Normalizing_Stain_Vectors  $Output_Files"Normalization_Parameters/"${#Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortStainVectors.npy \
+    --Normalizing_Histogram      $Output_Files"Normalization_Parameters/"${#sorted_Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortHistograms.npy \
+    --Normalizing_Stain_Vectors  $Output_Files"Normalization_Parameters/"${#sorted_Image_Array[@]}_Image_Cohort_Aggregated_Normalization_Parameters/${#Image_Array[@]}ImageCohortStainVectors.npy \
     --Output_Directory           $Output_Files"Normalized_Images" \
     --Stain_Vector_Training      $Training_Time
 done
