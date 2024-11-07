@@ -1,0 +1,9 @@
+GrayLevel,RgbColor,FeatureLabel
+0,255 255 0,White/Background
+1,33 143 166,Spindled Patterns
+2,210 5 208,Pale and Yellow Cellularity
+3,5 208 4,High Cellular with Vacuoles
+4,5 5 5,Dense Cellular (Pronounced Vessels)
+5,67 209 247,Large Vessels (often Cauterized)
+6,67 208 170,Tissue Edges (Hemorrahic)
+7,6 4 209,Medium Cellularity

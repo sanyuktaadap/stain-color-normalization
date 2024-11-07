@@ -1,0 +1,12 @@
+GrayLevel,RgbColor,FeatureLabel
+0,255 255 0,Problematic pixels
+1,33 143 166,Leading Edge
+2,210 5 208,Infiltrating Tumor
+3,5 208 4,Cellular Tumor
+4,5 5 5,Necrosis
+5,67 209 247,Perinecrotic Zone
+6,67 208 170,Pseudopolisading Cells around Necrosis
+7,6 4 209,Pseudopolisading Cells but no visible Necrosis
+8,255 102 0,Hyperplastic Blood
+9,255 51 0,Microvascular Proliferation
+10,255 255 255,
