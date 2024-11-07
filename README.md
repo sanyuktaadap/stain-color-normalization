@@ -63,7 +63,7 @@
     - Output from script 3:
       - `Normalized Images`
 
-## Step 3: File Format and Naming Conventions
+## File Format and Naming Conventions
 - **Image Files**: Can be in `.jpg`, or `.png` formats (non-pyramidal).
 - **Image Map Files**: Should be in `.jpg` or `.png` format.
 - **Naming Convention**: Image map filenames must include the corresponding image name. For example, if the image is `292324400.jpg`, the map should be named something like `LM_292324400.png`.
