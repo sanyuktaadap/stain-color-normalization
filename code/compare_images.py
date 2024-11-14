@@ -4,28 +4,27 @@ import matplotlib.pyplot as plt
 from skimage.io import imread
 from glob import glob
 from PIL import Image
-from skimage.color import rgb2lab
-from skimage.transform import resize
+import seaborn as sns
+from skimage.color import rgb2hed
 
 Image.MAX_IMAGE_PIXELS = None
 
 
-def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder, resize_shape=(400, 300)):
+def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder):
     """
     Visualizes images from three lists (original, normalized with original mask,
-    normalized with our mask) in both RGB and CIELAB color spaces, with resizing.
+    normalized with our mask) in RGB color spaces.
 
     Args:
         org (list of str): List of file paths for original images.
         norm_with_org_mask (list of str): List of file paths for images normalized with original mask.
         norm_with_our_mask (list of str): List of file paths for images normalized with our mask.
         output_folder (str): Path to the folder where the output plots will be saved.
-        resize_shape (tuple): Target size to resize images for plotting (height, width).
 
     Notes:
         - Each row in the subplot shows one image set in the order: original, normalized with original mask,
           and normalized with our mask.
-        - Two subplots are created: one for RGB visualization and one for CIELAB visualization.
+        - Subplots are created for RGB visualization.
     """
 
     # Ensure output folder exists
@@ -35,67 +34,38 @@ def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder,
     num_images = len(org)
 
     # Plot in RGB color space
-    # fig_rgb, axes_rgb = plt.subplots(num_images, 3, figsize=(15, 5 * num_images))
-    # fig_rgb.suptitle('Comparison of Images in RGB Color Space', fontsize=20)
+    fig_rgb, axes_rgb = plt.subplots(num_images,
+                                     3,
+                                     figsize=(15, 60))
 
-    # Plot in CIELAB color space
-    fig_lab, axes_lab = plt.subplots(num_images, 3, figsize=(15, 5 * num_images))
-    fig_lab.suptitle('Comparing Images in CIELAB Color Space', fontsize=20)
+    fig_rgb.suptitle('Comparison of Images in RGB Color Space', fontsize=24)
+
+    # Set column titles
+    column_titles = ["Original", "Normalized With Original Mask", "Normalized Our Mask"]
+    for col, title in enumerate(column_titles):
+        axes_rgb[0, col].set_title(title, fontsize=24, pad=20)
 
     for i in range(num_images):
         print(f"Image: {i+1}")
-        # Read and resize images
-        org_img = resize(imread(org[i]), resize_shape, anti_aliasing=True)
-        norm_org_mask_img = resize(imread(norm_with_org_mask[i]), resize_shape, anti_aliasing=True)
-        norm_our_mask_img = resize(imread(norm_with_our_mask[i]), resize_shape, anti_aliasing=True)
-        print(f"Images resized to {org_img.shape}")
 
-        # # RGB Plotting
-        # axes_rgb[i, 0].imshow(org_img)
-        # axes_rgb[i, 0].set_title("Original (RGB)")
-        # axes_rgb[i, 1].imshow(norm_org_mask_img)
-        # axes_rgb[i, 1].set_title("Normalized (Original Mask, RGB)")
-        # axes_rgb[i, 2].imshow(norm_our_mask_img)
-        # axes_rgb[i, 2].set_title("Normalized (Our Mask, RGB)")
+        org_img = imread(org[i])
+        norm_org_mask_img = imread(norm_with_org_mask[i])
+        norm_our_mask_img = imread(norm_with_our_mask[i])
 
-        # Convert images to CIELAB
-        org_img_lab = rgb2lab(org_img)
-        norm_org_mask_img_lab = rgb2lab(norm_org_mask_img)
-        norm_our_mask_img_lab = rgb2lab(norm_our_mask_img)
-        print(f"Images converted to CEILAB space")
+        # RGB Plotting
+        axes_rgb[i, 0].imshow(org_img)
+        axes_rgb[i, 1].imshow(norm_org_mask_img)
+        axes_rgb[i, 2].imshow(norm_our_mask_img)
 
-        # Normalize CIELAB channels for display
-        org_img_lab_display = (org_img_lab - org_img_lab.min()) / (org_img_lab.max() - org_img_lab.min())
-        norm_org_mask_img_lab_display = (norm_org_mask_img_lab - norm_org_mask_img_lab.min()) / (norm_org_mask_img_lab.max() - norm_org_mask_img_lab.min())
-        norm_our_mask_img_lab_display = (norm_our_mask_img_lab - norm_our_mask_img_lab.min()) / (norm_our_mask_img_lab.max() - norm_our_mask_img_lab.min())
-        print(f"Images normalized for CEILAB")
-
-        # CIELAB Plotting
-        axes_lab[i, 0].imshow(org_img_lab_display)
-        axes_lab[i, 0].set_title("Original Image")
-        axes_lab[i, 1].imshow(norm_org_mask_img_lab_display)
-        axes_lab[i, 1].set_title("Normalized Image with Original Mask")
-        axes_lab[i, 2].imshow(norm_our_mask_img_lab_display)
-        axes_lab[i, 2].set_title("Normalized Image with Our Mask")
-
-    # # Adjust layout and save RGB plot
-    # for ax in axes_rgb.ravel():
-    #     ax.axis('off')
-    # fig_rgb.tight_layout(rect=[0, 0, 1, 0.96])
-    # rgb_output_path = os.path.join(output_folder, 'comparison_rgb.png')
-    # fig_rgb.savefig(rgb_output_path, dpi=300)
-    # plt.close(fig_rgb)
-
-    # Adjust layout and save CIELAB plot
-    for ax in axes_lab.ravel():
+    # Adjust layout and save RGB plot
+    for ax in axes_rgb.ravel():
         ax.axis('off')
-    fig_lab.tight_layout(rect=[0, 0, 1, 0.96])
-    lab_output_path = os.path.join(output_folder, 'comparison_lab.png')
-    fig_lab.savefig(lab_output_path, dpi=300)
-    plt.close(fig_lab)
+    fig_rgb.tight_layout(rect=[0, 0, 1, 0.96])
+    rgb_output_path = os.path.join(output_folder, 'comparison_rgb.png')
+    fig_rgb.savefig(rgb_output_path, dpi=300)
+    plt.close(fig_rgb)
 
-    # print(f"RGB comparison plot saved at: {rgb_output_path}")
-    print(f"CIELAB comparison plot saved at: {lab_output_path}")
+    print(f"RGB comparison plot saved at: {rgb_output_path}")
 
 
 def compare_pi_std_by_roi(image_folder,
@@ -109,7 +79,7 @@ def compare_pi_std_by_roi(image_folder,
 
     Steps:
         - Gather a list of images and masks from `image_folder` and `mask_folder`, matching them based on a shared
-          base name (e.g., "image_001_Normalized.png" matches with "image_001.png").
+          base name (e.g., "image_001_Normalized.png" matches with "image_001_mask.png").
         - For each matched image-mask pair:
             - Extract pixel intensities for each ROI in the image, based on the mask labels.
             - Compute the standard deviation of pixel intensities within each ROI.
@@ -139,8 +109,8 @@ def compare_pi_std_by_roi(image_folder,
 
     for mask_file in mask_files:
         name = mask_file.split("/")[-1]
-        base_name = name.split(".")[0]
-        image_name = base_name + "_Normalized.png"  # Get base name of image
+        base_name = name.split("_")[0]
+        image_name = base_name + "_Normalized.png"
         image_file = os.path.join(image_folder, image_name)
 
         print(f"{image_file} - {mask_file}")
@@ -177,33 +147,118 @@ def compare_pi_std_by_roi(image_folder,
 
     print(f"Plot saved at: {output_path}")
 
+def plot_he_pi_std(image_folders=["data/for_normalization/Images",
+                                  "results/Normalized_Images",
+                                  "results/clustering/Normalized_Images"],
+                   mask_folder="data/for_normalization/Image_Maps",
+                   num_rois=11,
+                   output_folder="results/plots"):
+
+    h_df = {"h_group": [], # if the image is ORG, JNI or SNI
+            "h_roi": [],
+            "h_std": []}
+
+    e_df = {"e_group": [],
+            "e_roi": [],
+            "e_std": []}
+
+    # Ensure output folder exists
+    os.makedirs(output_folder, exist_ok=True)
+
+    mask_files = glob(os.path.join(mask_folder, "*"))
+
+    for i, mask_file in enumerate(mask_files):
+
+        name = mask_file.split("/")[-1]
+        base_name = name.split("_")[0]
+
+        for image_folder in image_folders:
+
+            if image_folder == "data/for_normalization/Images":
+                image_name = base_name + ".jpg"
+            elif image_folder == "results/Normalized_Images":
+                image_name = base_name + "_Normalized.png"
+            else:
+                image_name = base_name + "_Normalized.png"
+
+            image_file = os.path.join(image_folder, image_name)
+
+            print(f"({i}) {image_file} - {mask_file}")
+
+            rgb_image = imread(image_file)
+            hed_img = rgb2hed(rgb_image)
+
+            mask = imread(mask_file)  # Mask should be integer labeled regions
+
+            img_h = hed_img[:, :, 0]
+            img_e = hed_img[:, :, 1]
+
+            for roi in range(num_rois):
+
+                h_roi_pixels = img_h[mask == roi]  # Extract pixels for this ROI
+                e_roi_pixels = img_e[mask == roi]
+
+                if len(h_roi_pixels) > 0:
+                    h_df["h_roi"].append(roi)
+                    h_std_dev = np.std(h_roi_pixels)
+                    h_df["h_std"].append(h_std_dev)
+
+                    if image_folder == "data/for_normalization/Images":
+                        h_df["h_group"].append("ORG")
+                    elif image_folder == "results/Normalized_Images":
+                        h_df["h_group"].append("JNI")
+                    else:
+                        h_df["h_group"].append("SNI")
+
+                if len(e_roi_pixels) > 0:
+                    e_df["e_roi"].append(roi)
+                    e_std_dev = np.std(e_roi_pixels)
+                    e_df["e_std"].append(e_std_dev)
+
+                    if image_folder == "data/for_normalization/Images":
+                        e_df["e_group"].append("ORG")
+                    elif image_folder == "results/Normalized_Images":
+                        e_df["e_group"].append("JNI")
+                    else:
+                        e_df["e_group"].append("SNI")
+
+    # Plotting Hematoxilin
+    plt.figure(figsize=(14, 8))
+    sns.boxplot(data=h_df, x='h_roi', y='h_std', hue='h_group')
+    sns.swarmplot(data=h_df, x='h_roi', y='h_std', hue='h_group', dodge=True, s=5)
+    plt.xlabel("Regions of Interest")
+    plt.ylabel("Standard Deviation of Pixel Intensities")
+    plt.title("Hematoxylin - Standard Deviation of Pixel Intensities by ROI")
+    plt.savefig(os.path.join(output_folder, f"hematoxilin_{num_rois}.png"), dpi=300)
+    plt.close()
+
+    # Plotting Eosin
+    plt.figure(figsize=(14, 8))
+    sns.boxplot(data=e_df, x='e_roi', y='e_std', hue='e_group')
+    sns.swarmplot(data=e_df, x='e_roi', y='e_std', hue='e_group', dodge=True, s=5)
+    plt.xlabel("Regions of Interest")
+    plt.ylabel("Standard Deviation of Pixel Intensities")
+    plt.title("Eosin - Standard Deviation of Pixel Intensities by ROI")
+    plt.savefig(os.path.join(output_folder, f"eosin_{num_rois}.png"), dpi=300)
+    plt.close()
+
 
 if __name__ == "__main__":
 
-    # image_folder2 = './data/for_normalization/Images'
-    image_folder = "./results/clustering/Normalized_Images"
-    image_folder2 = "./results/Normalized_Images"
-    mask_folder = './data/for_normalization/KM_Masks/'
-    mask_folder2 = './data/for_normalization/Image_Maps/'
-    num_roi = 8
-    num_roi2 = 11
-    tag = 'Normalized_Image_With_Our_Mask'
-    tag2 = 'Normalized_Image_With_Original_Mask'
     output_folder = './results/plots'
 
-    # compare_pi_std_by_roi(image_folder, mask_folder, output_folder, tag, num_roi)
-    # compare_pi_std_by_roi(image_folder2, mask_folder2, output_folder, tag2, num_roi2)
+    compare_pi_std_by_roi("./results/Normalized_Images", './data/for_normalization/KM_Masks/', output_folder, 'JNI_With_Sanyukta_Mask', 8)
+    compare_pi_std_by_roi("./results/clustering/Normalized_Images", './data/for_normalization/Image_Maps/', output_folder, 'SNI_With_Jose_Mask', 11)
 
-    org_img = ["./data/for_normalization/Images/266291365.jpg",
-               "./data/for_normalization/Images/294219481.jpg",
-               "./data/for_normalization/Images/310443139.jpg"]
+    imgs_folder = "./data/for_comparison/Original/"
+    imgs = os.listdir(imgs_folder)
+    base_names = [img.split("/")[-1] for img in imgs]
+    org_imgs = [imgs_folder + img for img in base_names]
+    norm_with_org_masks = ["./results/Normalized_Images/" + img.split(".")[0] + "_Normalized.png" for img in base_names]
+    norm_with_our_masks = ["./results/clustering/Normalized_Images/" + img.split(".")[0] + "_Normalized.png" for img in base_names]
 
-    norm_with_org_mask = ["./results/Normalized_Images/266291365_Normalized.png",
-                          "./results//Normalized_Images/294219481_Normalized.png",
-                          "./results/Normalized_Images/310443139_Normalized.png"]
+    plot_comparisons(org_imgs, norm_with_org_masks, norm_with_our_masks, output_folder)
 
-    norm_with_our_mask = ["./results/clustering/Normalized_Images/266291365_Normalized.png",
-                          "./results/clustering/Normalized_Images/294219481_Normalized.png",
-                          "./results/clustering/Normalized_Images/310443139_Normalized.png"]
-
-    plot_comparisons(org_img, norm_with_org_mask, norm_with_our_mask, output_folder)
+    plot_he_pi_std()
+    plot_he_pi_std(mask_folder="data/for_normalization/KM_Masks",
+                   num_rois=8)
