@@ -6,9 +6,9 @@ from glob import glob
 from PIL import Image
 import seaborn as sns
 from skimage.color import rgb2hed
+import pandas as pd
 
 Image.MAX_IMAGE_PIXELS = None
-
 
 def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder):
     """
@@ -67,85 +67,111 @@ def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder)
 
     print(f"RGB comparison plot saved at: {rgb_output_path}")
 
-
-def compare_pi_std_by_roi(image_folder,
-                          mask_folder,
-                          output_folder,
-                          tag,
-                          num_rois):
+def compare_pi_std_by_roi(image_folders=["data/for_normalization/Images",
+                                         "results/Normalized_Images",
+                                         "results/clustering/Normalized_Images"],
+                          mask_folder="data/for_normalization/Image_Maps",
+                          num_rois=11,
+                          output_folder="results/plots"):
     """
-    Computes and visualizes the standard deviation of pixel intensities across multiple regions of interest (ROIs)
-    in a set of images, based on corresponding mask regions, and saves a boxplot summarizing these statistics.
+    Computes and visualizes the standard deviation of pixel intensities within different regions of interest (ROIs)
+    in a set of images, using corresponding mask files to define the ROIs. The function saves a boxplot summarizing
+    the distribution of these statistics for each ROI and group of images.
 
     Steps:
-        - Gather a list of images and masks from `image_folder` and `mask_folder`, matching them based on a shared
-          base name (e.g., "image_001_Normalized.png" matches with "image_001_mask.png").
-        - For each matched image-mask pair:
-            - Extract pixel intensities for each ROI in the image, based on the mask labels.
-            - Compute the standard deviation of pixel intensities within each ROI.
-            - Collect these statistics for all images.
-        - Generate a boxplot showing the distribution of standard deviations by ROI.
-        - Save the plot in the specified `output_folder`.
+        - Retrieves images and corresponding masks from the specified `image_folder` and `mask_folder` based on
+          matching base names (e.g., "image_001_Normalized.png" matches with "image_001_mask.png").
+        - For each image-mask pair:
+            - Extracts pixel intensities from the image for each ROI as defined by the mask.
+            - Computes the standard deviation of pixel intensities for each ROI.
+            - Stores the standard deviations for later plotting.
+        - Generates a boxplot showing the distribution of standard deviations by ROI, grouped by image type.
+        - Saves the plot in the specified `output_folder`.
 
     Args:
-        image_folder (str): The path to the folder containing the images.
-                            Image filenames should partially match those of the corresponding masks.
-        mask_folder (str): The path to the folder containing the mask files.
-                           Each mask should label different ROIs as integer values (e.g., 0, 1, 2).
-        output_folder (str): The path to the folder where the generated boxplot will be saved.
-                             The folder will be created if it does not exist.
-        tag (str): A descriptive label to add to the plot title and output filename, helping
-                   identify different sets of images.
-        num_rois (int): The total number of distinct ROIs expected in each mask (e.g., 5 for labels 0-4).
-                        Assumes that all masks use consistent labeling.
+        image_folders (list of str): A list of paths to the folders containing the image files. The filenames of
+                                      the images should correspond to those in the mask folder based on the base name.
+                                      Example: ["data/for_normalization/Images", "results/Normalized_Images"].
+        mask_folder (str): The path to the folder containing mask files. Each mask should label distinct ROIs using
+                           integer values (e.g., 0, 1, 2).
+        num_rois (int): The number of distinct ROIs in the mask images. Assumes that masks have consistent labeling.
+                        For example, `num_rois=11` would mean 11 different regions, labeled 0 through 10.
+        output_folder (str): The path to the folder where the resulting boxplot will be saved. The folder will be
+                             created if it does not exist.
+
+    Returns:
+        None: The function generates a plot and saves it to the specified `output_folder`. It does not return any
+              values.
     """
+
+    df = {"group": [],
+          "roi": [],
+          "std": []}
 
     # Ensure output folder exists
     os.makedirs(output_folder, exist_ok=True)
 
-    std_devs_by_roi = [[] for _ in range(num_rois)]
-
     mask_files = glob(os.path.join(mask_folder, "*"))
 
-    for mask_file in mask_files:
+    for i, mask_file in enumerate(mask_files):
         name = mask_file.split("/")[-1]
         base_name = name.split("_")[0]
-        image_name = base_name + "_Normalized.png"
-        image_file = os.path.join(image_folder, image_name)
 
-        print(f"{image_file} - {mask_file}")
-        image = imread(image_file, as_gray=True)  # Read as grayscale
-        mask = imread(mask_file)  # Mask should be integer labeled regions
+        for image_folder in image_folders:
 
-        for roi in range(num_rois+1):
-            roi_pixels = image[mask == roi]  # Extract pixels for this ROI
-            if len(roi_pixels) > 0:
-                std_dev = np.std(roi_pixels)
-                std_devs_by_roi[roi].append(std_dev)
+            if image_folder == "data/for_normalization/Images":
+                image_name = base_name + ".jpg"
+            elif image_folder == "results/Normalized_Images":
+                image_name = base_name + "_Normalized.png"
+            else:
+                image_name = base_name + "_Normalized.png"
+
+            image_file = os.path.join(image_folder, image_name)
+
+            print(f"({i}) {image_file} - {mask_file}")
+            image = imread(image_file, as_gray=True)  # Read as grayscale
+            mask = imread(mask_file)  # Mask should be integer labeled regions
+
+            for roi in range(num_rois):
+                roi_pixels = image[mask == roi]  # Extract pixels for this ROI
+                if len(roi_pixels) > 0:
+                    std_dev = np.std(roi_pixels)
+                    df["roi"].append(roi)
+                    df["std"].append(std_dev)
+
+                    if image_folder == "data/for_normalization/Images":
+                        df["group"].append("ORG")
+                    elif image_folder == "results/Normalized_Images":
+                        df["group"].append("JNI")
+                    else:
+                        df["group"].append("SNI")
+
+    data = pd.DataFrame(df)
+    data.to_csv(os.path.join(output_folder, f"std_pi_{num_rois}.csv"), index=False)
 
     # Plotting
-    plt.figure(figsize=(12, 8))
-
-    plt.boxplot(std_devs_by_roi,
-                positions=range(num_rois),
-                patch_artist=True,
-                boxprops=dict(facecolor="lightblue"))
-
-    # Add individual points
-    for roi, std_devs in enumerate(std_devs_by_roi):
-        plt.plot([roi] * len(std_devs), std_devs, 'ro', markersize=5, alpha=0.6)
-
+    print("Plotting")
+    output_path = os.path.join(output_folder, f"std_pi_{num_rois}.png")
+    plt.figure(figsize=(20, 14))
+    sns.boxplot(data=df,
+                x='roi',
+                y='std',
+                hue='group',
+                showmeans=True,
+                meanprops={'marker':'o',
+                           'markerfacecolor':'white',
+                           'markeredgecolor':'black',
+                           'markersize':'8'})
+    sns.swarmplot(data=df, x='roi', y='std', hue='group', dodge=True, s=4)
     plt.xlabel("Regions of Interest")
     plt.ylabel("Standard Deviation of Pixel Intensities")
-    plt.title(f"Standard Deviation of Pixel Intensities by ROI - {tag}")
-    plt.xticks(range(num_rois), [f"Region {i}" for i in range(num_rois)])
-
-    # Save the figure
-    output_path = os.path.join(output_folder, f'std_dev_plot_{tag}.png')
+    plt.title("Standard Deviation of Pixel Intensities by ROI")
+    plt.legend(loc=1)
     plt.savefig(output_path, dpi=300)
     plt.close()
 
     print(f"Plot saved at: {output_path}")
+
 
 def plot_he_pi_std(image_folders=["data/for_normalization/Images",
                                   "results/Normalized_Images",
@@ -222,25 +248,57 @@ def plot_he_pi_std(image_folders=["data/for_normalization/Images",
                     else:
                         e_df["e_group"].append("SNI")
 
+    h_data = pd.DataFrame(h_df)
+    e_data = pd.DataFrame(e_df)
+
+    h_data.to_csv(os.path.join(output_folder, f"hematoxilin_pi_std_{num_rois}.csv"), index=False)
+    e_data.to_csv(os.path.join(output_folder, f"eosin_pi_std_{num_rois}.csv"), index=False)
+
     # Plotting Hematoxilin
-    plt.figure(figsize=(14, 8))
-    sns.boxplot(data=h_df, x='h_roi', y='h_std', hue='h_group')
-    sns.swarmplot(data=h_df, x='h_roi', y='h_std', hue='h_group', dodge=True, s=5)
+    print("plotting")
+    plt.figure(figsize=(20, 14))
+    sns.boxplot(data=h_df,
+                x='h_roi',
+                y='h_std',
+                hue='h_group',
+                showmeans=True,
+                meanprops={'marker':'o',
+                           'markerfacecolor':'white',
+                           'markeredgecolor':'black',
+                           'markersize':'8'})
+    sns.swarmplot(data=h_df, x='h_roi', y='h_std', hue='h_group', dodge=True, s=4)
     plt.xlabel("Regions of Interest")
     plt.ylabel("Standard Deviation of Pixel Intensities")
     plt.title("Hematoxylin - Standard Deviation of Pixel Intensities by ROI")
+    plt.legend(loc=1)
     plt.savefig(os.path.join(output_folder, f"hematoxilin_{num_rois}.png"), dpi=300)
     plt.close()
 
+    print(f"Hematoxilin Plot saved in {output_folder}")
+
+    del h_df, h_data
+
     # Plotting Eosin
-    plt.figure(figsize=(14, 8))
-    sns.boxplot(data=e_df, x='e_roi', y='e_std', hue='e_group')
-    sns.swarmplot(data=e_df, x='e_roi', y='e_std', hue='e_group', dodge=True, s=5)
+    plt.figure(figsize=(20, 14))
+    sns.boxplot(data=e_df,
+                x='e_roi',
+                y='e_std',
+                hue='e_group',
+                showmeans=True,
+                meanprops={'marker':'o',
+                           'markerfacecolor':'white',
+                           'markeredgecolor':'black',
+                           'markersize':'8'})
+    sns.swarmplot(data=e_df, x='e_roi', y='e_std', hue='e_group', dodge=True, s=4)
     plt.xlabel("Regions of Interest")
     plt.ylabel("Standard Deviation of Pixel Intensities")
     plt.title("Eosin - Standard Deviation of Pixel Intensities by ROI")
+    plt.legend(loc=1)
     plt.savefig(os.path.join(output_folder, f"eosin_{num_rois}.png"), dpi=300)
     plt.close()
+
+    print(f"Eosin Plot saved in {output_folder}")
+
 
 
 if __name__ == "__main__":
@@ -258,6 +316,11 @@ if __name__ == "__main__":
     norm_with_our_masks = ["./results/clustering/Normalized_Images/" + img.split(".")[0] + "_Normalized.png" for img in base_names]
 
     plot_comparisons(org_imgs, norm_with_org_masks, norm_with_our_masks, output_folder)
+
+
+    compare_pi_std_by_roi()
+    compare_pi_std_by_roi(mask_folder="data/for_normalization/KM_Masks",
+                   num_rois=8)
 
     plot_he_pi_std()
     plot_he_pi_std(mask_folder="data/for_normalization/KM_Masks",
