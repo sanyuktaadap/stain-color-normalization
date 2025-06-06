@@ -9,18 +9,19 @@ Image.MAX_IMAGE_PIXELS = None
 
 # Step 1: Define consistent colors for each label
 label_colors = {
-    0: (255, 255, 255),  # White
-    1: (33, 143, 166),   # Teal
-    2: (210, 5, 208),    # Magenta
-    3: (5, 208, 4),      # Green
-    4: (5, 5, 5),        # Dark gray
-    5: (67, 209, 247),   # Light blue
-    6: (67, 208, 170),   # Aqua
-    7: (6, 4, 209,),     # Indigo
-    8: (255, 102, 0),    # Orange
-    9: (255, 51, 0),     # Red
-    10: (255, 255, 255)  # Black
+    0: (245, 245, 245),  # Soft White (light gray-white)
+    1: (255, 102, 102),  # Soft Red (pastel red)
+    2: (255, 153, 255),  # Soft Magenta (light pink-magenta)
+    3: (102, 204, 204),  # Soft Teal
+    4: (255, 255, 153),  # Soft Yellow (light yellow)
+    5: (153, 204, 255),  # Soft Blue (light sky blue)
+    6: (64, 64, 64),     # Soft Black (dark gray)
+    7: (204, 153, 255),  # Soft Purple (lavender)
+    8: (255, 204, 153),  # Soft Orange (peachy)
+    9: (153, 255, 153),  # Soft Green (mint green)
+    10: (204, 204, 153), # Soft Olive (muted khaki)
 }
+
 
 # Step 2: Function to convert a label map to an RGB image
 def colorize_seg_map(seg_map):
@@ -33,14 +34,15 @@ def colorize_seg_map(seg_map):
     return rgb_img
 
 # Step 3: Loop through all segmentation maps
-maps = os.listdir("data/for_normalization/colored_Image_Maps/")
-km_path = "data/for_normalization/KM_Masks/"
-# seg_paths = glob.glob("data/for_normalization/KM_Masks/*.png")
-# random.shuffle(seg_paths)
-seg_paths = [os.path.join(km_path, m) for m in maps]
+masks_list = os.listdir("data/for_normalization/comparison_Images")
+masks_list = [os.path.splitext(m)[0] + "_mask.png" for m in masks_list]
+print(masks_list)
+
+seg_type = "KM_Masks"
+seg_paths = [os.path.join(f"data/for_normalization/{seg_type}/", m) for m in masks_list]
 print(seg_paths)
 
-for path in seg_paths[:5]:
+for path in seg_paths:
     # Load segmentation map with PIL
     seg = Image.open(path).convert('L')  # 'L' mode loads as grayscale
     seg = np.array(seg)
@@ -58,5 +60,5 @@ for path in seg_paths[:5]:
     plt.axis('off')
     # plt.show()
 
-    # To save:
-    plt.imsave(f"data/for_normalization/colored_KM_Masks/{os.path.basename(path)}", colored)
+    # Save
+    plt.imsave(f"data/for_normalization/colored_{seg_type}/{os.path.basename(path)}", colored)
