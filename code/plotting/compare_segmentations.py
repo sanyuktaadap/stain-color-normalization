@@ -1,6 +1,7 @@
 import os
 import matplotlib.pyplot as plt
 from PIL import Image
+from scipy.ndimage import gaussian_filter
 
 Image.MAX_IMAGE_PIXELS = None
 

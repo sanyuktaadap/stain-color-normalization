@@ -7,6 +7,7 @@ from PIL import Image
 import seaborn as sns
 from skimage.color import rgb2hed
 import pandas as pd
+from tqdm import tqdm
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -36,16 +37,16 @@ def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder)
     # Plot in RGB color space
     fig_rgb, axes_rgb = plt.subplots(num_images,
                                      3,
-                                     figsize=(15, 60))
+                                     figsize=(15, 30))
 
     fig_rgb.suptitle('Comparison of Images in RGB Color Space', fontsize=24)
 
     # Set column titles
-    column_titles = ["Original", "Normalized With Original Mask", "Normalized Our Mask"]
+    column_titles = ["Original", "Normalized With Original Mask", "Normalized with Our Mask"]
     for col, title in enumerate(column_titles):
         axes_rgb[0, col].set_title(title, fontsize=24, pad=20)
 
-    for i in range(num_images):
+    for i in tqdm(range(num_images)):
         print(f"Image: {i+1}")
 
         org_img = imread(org[i])
@@ -62,7 +63,7 @@ def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder)
         ax.axis('off')
     fig_rgb.tight_layout(rect=[0, 0, 1, 0.96])
     rgb_output_path = os.path.join(output_folder, 'comparison_rgb.png')
-    fig_rgb.savefig(rgb_output_path, dpi=300)
+    fig_rgb.savefig(rgb_output_path, dpi=200)
     plt.close(fig_rgb)
 
     print(f"RGB comparison plot saved at: {rgb_output_path}")
@@ -308,15 +309,13 @@ if __name__ == "__main__":
     compare_pi_std_by_roi("./results/Normalized_Images", './data/for_normalization/KM_Masks/', output_folder, 'JNI_With_Sanyukta_Mask', 8)
     compare_pi_std_by_roi("./results/clustering/Normalized_Images", './data/for_normalization/Image_Maps/', output_folder, 'SNI_With_Jose_Mask', 11)
 
-    imgs_folder = "./data/for_comparison/Original/"
+    imgs_folder = "./data/for_comparison/"
     imgs = os.listdir(imgs_folder)
-    base_names = [img.split("/")[-1] for img in imgs]
-    org_imgs = [imgs_folder + img for img in base_names]
-    norm_with_org_masks = ["./results/Normalized_Images/" + img.split(".")[0] + "_Normalized.png" for img in base_names]
-    norm_with_our_masks = ["./results/clustering/Normalized_Images/" + img.split(".")[0] + "_Normalized.png" for img in base_names]
+    org_imgs = [imgs_folder + img for img in imgs]
+    norm_with_org_masks = ["./results/JNI/" + img.split(".")[0] + "_Normalized.png" for img in imgs]
+    norm_with_our_masks = ["./results/SNI/" + img.split(".")[0] + "_Normalized.png" for img in imgs]
 
     plot_comparisons(org_imgs, norm_with_org_masks, norm_with_our_masks, output_folder)
-
 
     compare_pi_std_by_roi()
     compare_pi_std_by_roi(mask_folder="data/for_normalization/KM_Masks",
