@@ -162,17 +162,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Extract patches from WSI.')
     parser.add_argument('--images_folder', default="data/for_normalization/Images", type=str, required=True, help='Directory where the slide images are located.')
     parser.add_argument('--hdf5_folder', default="data/for_normalization/patches", type=str, required=True, help='Directory to store the extracted patches.')
-    parser.add_argument('--patch_size', default=256, type=int, required=True, help='Patch size to extract')
-    parser.add_argument('int_thresh', default=245, type=int, help='Pixel intensity threshold for discarging patches. If None, no patches will be discarded.')
+    parser.add_argument('--patch_size', default=256, type=int, help='Patch size to extract')
+    parser.add_argument('--int_thresh', default=245, type=int, help='Pixel intensity threshold for discarging patches. If None, no patches will be discarded.')
     args = parser.parse_args()
 
     Image.MAX_IMAGE_PIXELS = None
 
     images = os.listdir(args.images_folder)
-    patch_size = 256
 
     # Step 1: Extract patches with coordinates
-    extract_patches(args.images_folder, patch_size, args.hdf5_folder, args.int_thresh)
+    extract_patches(args.images_folder, args.patch_size, args.hdf5_folder, args.int_thresh)
 
     # (Optional) Stitch patches back
     # reconstructed_image = stitch_patches(hdf5_file, original_size, patch_size)
