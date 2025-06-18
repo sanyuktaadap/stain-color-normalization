@@ -8,6 +8,7 @@ import seaborn as sns
 from skimage.color import rgb2hed
 import pandas as pd
 from tqdm import tqdm
+from utils import resize_for_display
 
 Image.MAX_IMAGE_PIXELS = None
 
@@ -39,19 +40,19 @@ def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder)
                                      3,
                                      figsize=(15, 30))
 
-    fig_rgb.suptitle('Comparison of Images in RGB Color Space', fontsize=24)
+    fig_rgb.suptitle('Comparison of Images in RGB Color Space', fontsize=17)
 
     # Set column titles
-    column_titles = ["Original", "Normalized With Original Mask", "Normalized with Our Mask"]
+    column_titles = ["Original", "Normalized with IvyGAP Mask", "Normalized with Unsupervised Mask"]
     for col, title in enumerate(column_titles):
-        axes_rgb[0, col].set_title(title, fontsize=24, pad=20)
+        axes_rgb[0, col].set_title(title, fontsize=17, pad=20)
 
     for i in tqdm(range(num_images)):
         print(f"Image: {i+1}")
 
-        org_img = imread(org[i])
-        norm_org_mask_img = imread(norm_with_org_mask[i])
-        norm_our_mask_img = imread(norm_with_our_mask[i])
+        org_img = resize_for_display(Image.open(org[i]))
+        norm_org_mask_img = resize_for_display(Image.open(norm_with_org_mask[i]))
+        norm_our_mask_img = resize_for_display(Image.open(norm_with_our_mask[i]))
 
         # RGB Plotting
         axes_rgb[i, 0].imshow(org_img)
@@ -63,7 +64,7 @@ def plot_comparisons(org, norm_with_org_mask, norm_with_our_mask, output_folder)
         ax.axis('off')
     fig_rgb.tight_layout(rect=[0, 0, 1, 0.96])
     rgb_output_path = os.path.join(output_folder, 'comparison_rgb.png')
-    fig_rgb.savefig(rgb_output_path, dpi=200)
+    fig_rgb.savefig(rgb_output_path, dpi=300)
     plt.close(fig_rgb)
 
     print(f"RGB comparison plot saved at: {rgb_output_path}")
@@ -134,6 +135,8 @@ def compare_pi_std_by_roi(image_folders=["data/for_normalization/Images",
             mask = imread(mask_file)  # Mask should be integer labeled regions
 
             for roi in range(num_rois):
+                if roi == 0: # Skip background ROI
+                    continue
                 roi_pixels = image[mask == roi]  # Extract pixels for this ROI
                 if len(roi_pixels) > 0:
                     std_dev = np.std(roi_pixels)
@@ -148,11 +151,11 @@ def compare_pi_std_by_roi(image_folders=["data/for_normalization/Images",
                         df["group"].append("SNI")
 
     data = pd.DataFrame(df)
-    data.to_csv(os.path.join(output_folder, f"std_pi_{num_rois}.csv"), index=False)
+    data.to_csv(os.path.join(output_folder, f"std_pi_{num_rois-1}.csv"), index=False)
 
     # Plotting
     print("Plotting")
-    output_path = os.path.join(output_folder, f"std_pi_{num_rois}.png")
+    output_path = os.path.join(output_folder, f"std_pi_{num_rois-1}.png")
     plt.figure(figsize=(20, 14))
     sns.boxplot(data=df,
                 x='roi',
@@ -181,11 +184,11 @@ def plot_he_pi_std(image_folders=["data/for_normalization/Images",
                    num_rois=11,
                    output_folder="results/plots"):
 
-    h_df = {"h_group": [], # if the image is ORG, JNI or SNI
+    h_df = {"hem_group": [], # if the image is ORG, JNI or SNI
             "h_roi": [],
             "h_std": []}
 
-    e_df = {"e_group": [],
+    e_df = {"eos_group": [],
             "e_roi": [],
             "e_std": []}
 
@@ -231,11 +234,11 @@ def plot_he_pi_std(image_folders=["data/for_normalization/Images",
                     h_df["h_std"].append(h_std_dev)
 
                     if image_folder == "data/for_normalization/Images":
-                        h_df["h_group"].append("ORG")
+                        h_df["hem_group"].append("ORG")
                     elif image_folder == "results/Normalized_Images":
-                        h_df["h_group"].append("JNI")
+                        h_df["hem_group"].append("JNI")
                     else:
-                        h_df["h_group"].append("SNI")
+                        h_df["hem_group"].append("SNI")
 
                 if len(e_roi_pixels) > 0:
                     e_df["e_roi"].append(roi)
@@ -243,17 +246,69 @@ def plot_he_pi_std(image_folders=["data/for_normalization/Images",
                     e_df["e_std"].append(e_std_dev)
 
                     if image_folder == "data/for_normalization/Images":
-                        e_df["e_group"].append("ORG")
+                        e_df["eos_group"].append("ORG")
                     elif image_folder == "results/Normalized_Images":
-                        e_df["e_group"].append("JNI")
+                        e_df["eos_group"].append("JNI")
                     else:
-                        e_df["e_group"].append("SNI")
+                        e_df["eos_group"].append("SNI")
 
     h_data = pd.DataFrame(h_df)
     e_data = pd.DataFrame(e_df)
 
-    h_data.to_csv(os.path.join(output_folder, f"hematoxilin_pi_std_{num_rois}.csv"), index=False)
-    e_data.to_csv(os.path.join(output_folder, f"eosin_pi_std_{num_rois}.csv"), index=False)
+    h_data.to_csv(os.path.join(output_folder, f"csv/hematoxilin_pi_std_{num_rois}.csv"), index=False)
+    e_data.to_csv(os.path.join(output_folder, f"csv/eosin_pi_std_{num_rois}.csv"), index=False)
+
+    print("plotting")
+
+    # Set global font size
+    plt.rcParams.update({'font.size': 17})
+
+    # Create side-by-side plots
+    fig, axs = plt.subplots(1, 2, figsize=(32, 14), sharey=True)
+
+    # Hematoxylin Plot
+    sns.boxplot(data=h_data, x='h_roi', y='h_std', hue='hem_group',
+                showmeans=True,
+                ax=axs[0],
+                meanprops={'marker':'o',
+                           'markerfacecolor':'white',
+                           'markeredgecolor':'black',
+                           'markersize':8})
+    sns.swarmplot(data=h_data, x='h_roi', y='h_std', hue='hem_group',
+                  dodge=True, s=4, ax=axs[0], palette=sns.color_palette(n_colors=3))
+
+    axs[0].set_title("Hematoxylin - Standard Deviation by ROI")
+    axs[0].set_xlabel("Regions of Interest")
+    axs[0].set_ylabel("Std. Dev. of Pixel Intensities")
+    axs[0].legend_.remove()
+
+    # Eosin Plot
+    sns.boxplot(data=e_data, x='e_roi', y='e_std', hue='eos_group',
+                showmeans=True,
+                ax=axs[1],
+                meanprops={'marker':'o',
+                           'markerfacecolor':'white',
+                           'markeredgecolor':'black',
+                           'markersize':8})
+    sns.swarmplot(data=e_data, x='e_roi', y='e_std', hue='eos_group',
+                  dodge=True, s=4, ax=axs[1], palette=sns.color_palette(n_colors=3))
+
+    axs[1].set_title("Eosin - Standard Deviation by ROI")
+    axs[1].set_xlabel("Regions of Interest")
+    axs[1].set_ylabel("")
+
+    # Consolidate legend
+    handles, labels = axs[1].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', ncol=3, fontsize=17)
+
+    # Adjust layout
+    plt.tight_layout(rect=[0, 0, 1, 0.95])  # Leave space for legend on top
+
+    # Save combined plot
+    plt.savefig(os.path.join(output_folder, f"he_pi_std_side_by_side_{num_rois}.png"), dpi=300)
+    plt.close()
+
+    print(f"Combined Hematoxilin and Eosin plot saved in {output_folder}")
 
     # Plotting Hematoxilin
     print("plotting")
@@ -261,13 +316,13 @@ def plot_he_pi_std(image_folders=["data/for_normalization/Images",
     sns.boxplot(data=h_df,
                 x='h_roi',
                 y='h_std',
-                hue='h_group',
+                hue='hem_group',
                 showmeans=True,
                 meanprops={'marker':'o',
                            'markerfacecolor':'white',
                            'markeredgecolor':'black',
                            'markersize':'8'})
-    sns.swarmplot(data=h_df, x='h_roi', y='h_std', hue='h_group', dodge=True, s=4)
+    sns.swarmplot(data=h_df, x='h_roi', y='h_std', hue='hem_group', dodge=True, s=4)
     plt.xlabel("Regions of Interest")
     plt.ylabel("Standard Deviation of Pixel Intensities")
     plt.title("Hematoxylin - Standard Deviation of Pixel Intensities by ROI")
@@ -284,13 +339,13 @@ def plot_he_pi_std(image_folders=["data/for_normalization/Images",
     sns.boxplot(data=e_df,
                 x='e_roi',
                 y='e_std',
-                hue='e_group',
+                hue='eos_group',
                 showmeans=True,
                 meanprops={'marker':'o',
                            'markerfacecolor':'white',
                            'markeredgecolor':'black',
                            'markersize':'8'})
-    sns.swarmplot(data=e_df, x='e_roi', y='e_std', hue='e_group', dodge=True, s=4)
+    sns.swarmplot(data=e_df, x='e_roi', y='e_std', hue='eos_group', dodge=True, s=4)
     plt.xlabel("Regions of Interest")
     plt.ylabel("Standard Deviation of Pixel Intensities")
     plt.title("Eosin - Standard Deviation of Pixel Intensities by ROI")
@@ -304,22 +359,22 @@ def plot_he_pi_std(image_folders=["data/for_normalization/Images",
 
 if __name__ == "__main__":
 
-    output_folder = './results/plots'
+    # output_folder = './results/plots'
 
-    compare_pi_std_by_roi("./results/Normalized_Images", './data/for_normalization/KM_Masks/', output_folder, 'JNI_With_Sanyukta_Mask', 8)
-    compare_pi_std_by_roi("./results/clustering/Normalized_Images", './data/for_normalization/Image_Maps/', output_folder, 'SNI_With_Jose_Mask', 11)
+    # compare_pi_std_by_roi("./results/Normalized_Images", './data/for_normalization/KM_Masks/', output_folder, 'JNI_With_Sanyukta_Mask', 8, bg_roi=0)
+    # compare_pi_std_by_roi("./results/clustering/Normalized_Images", './data/for_normalization/Image_Maps/', output_folder, 'SNI_With_Jose_Mask', 11, bg_roi=10)
 
-    imgs_folder = "./data/for_comparison/"
-    imgs = os.listdir(imgs_folder)
-    org_imgs = [imgs_folder + img for img in imgs]
-    norm_with_org_masks = ["./results/JNI/" + img.split(".")[0] + "_Normalized.png" for img in imgs]
-    norm_with_our_masks = ["./results/SNI/" + img.split(".")[0] + "_Normalized.png" for img in imgs]
+    # imgs_folder = "./data/for_comparison/"
+    # imgs = os.listdir(imgs_folder)
+    # org_imgs = [imgs_folder + img for img in imgs]
+    # norm_with_org_masks = ["./results/JNI/" + img.split(".")[0] + "_Normalized.png" for img in imgs]
+    # norm_with_our_masks = ["./results/SNI/" + img.split(".")[0] + "_Normalized.png" for img in imgs]
 
-    plot_comparisons(org_imgs, norm_with_org_masks, norm_with_our_masks, output_folder)
+    # plot_comparisons(org_imgs, norm_with_org_masks, norm_with_our_masks, output_folder)
 
-    compare_pi_std_by_roi()
-    compare_pi_std_by_roi(mask_folder="data/for_normalization/KM_Masks",
-                   num_rois=8)
+    # compare_pi_std_by_roi()
+    # compare_pi_std_by_roi(mask_folder="data/for_normalization/KM_Masks",
+    #                num_rois=8)
 
     plot_he_pi_std()
     plot_he_pi_std(mask_folder="data/for_normalization/KM_Masks",

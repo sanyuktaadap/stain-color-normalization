@@ -3,26 +3,10 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 from scipy.ndimage import gaussian_filter
-from scipy.ndimage import median_filter
+from utils import resize_for_display, smooth_mask
+from tqdm import tqdm
 
 Image.MAX_IMAGE_PIXELS = None
-
-# Resize helper
-def resize_for_display(pil_img, max_size=(224, 224)):
-    img = pil_img.copy()
-    img.thumbnail(max_size, Image.ANTIALIAS)
-    return img
-
-# Smoothen image helper
-def smooth_mask(pil_img, size=3):
-    """Applies median filter to smoothen mask edges without blurring labels."""
-    np_img = np.array(pil_img)
-    if np_img.ndim == 3:
-        # Apply median filter to each channel separately
-        smoothed = np.stack([median_filter(np_img[:, :, c], size=size) for c in range(3)], axis=-1)
-    else:
-        smoothed = median_filter(np_img, size=size)
-    return Image.fromarray(smoothed.astype(np.uint8))
 
 # Folder paths
 img_folder = "data/for_normalization/comparison_Images"
@@ -34,12 +18,12 @@ image_filenames = sorted([f for f in os.listdir(img_folder) if f.endswith(".jpg"
 print(f"Filenames: {image_filenames}")
 
 n_rows = len(image_filenames)
-n_cols = 4
+n_cols = 3
 
 # Set up the figure
 fig, axs = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(16, 4 * n_rows))
 
-column_titles = ["Original Image", "Original Mask", "Our Mask", "Our Smoothed Mask"]
+column_titles = ["Original Image", "IvyGAP Mask", "Unsupervised Mask"]#, "Our Smoothed Mask"]
 
 # Add column titles
 for j in range(n_cols):
@@ -49,10 +33,11 @@ for j in range(n_cols):
 kernel_sizes = [3, 5, 7, 9]
 for size in kernel_sizes:
     for i, filename in enumerate(image_filenames):
+        print(filename)
         name_prefix = os.path.splitext(filename)[0]
         original_path = os.path.join(img_folder, filename)
-        gt_mask_path = os.path.join(gt_mask_folder, f"{name_prefix}_mask.png")
-        pred_mask_path = os.path.join(pred_mask_folder, f"{name_prefix}_mask.png")
+        gt_mask_path = os.path.join(gt_mask_folder, f"new_{name_prefix}_mask.png")
+        pred_mask_path = os.path.join(pred_mask_folder, f"new_{name_prefix}_mask.png")
 
         if not all([os.path.exists(p) for p in [original_path, gt_mask_path, pred_mask_path]]):
             print(f"Skipping {filename} due to missing file")
@@ -67,24 +52,30 @@ for size in kernel_sizes:
         gt_mask_img = resize_for_display(gt_mask_img)
         pred_mask_img = resize_for_display(pred_mask_img)
 
-        # Smoothen the predicted mask
-        smoothed_pred_img = smooth_mask(pred_mask_img, size=size)
-        smoothed_pred_img = resize_for_display(smoothed_pred_img)
+        # # Smoothen the predicted mask
+        # smoothed_pred_img = smooth_mask(pred_mask_img, size=size)
+        # smoothed_pred_img = resize_for_display(smoothed_pred_img)
 
-        print(f"{filename}: original_img size = {original_img.size}")
+        # Draw a black box around the original image
+        original_np = np.array(original_img)
+        h, w = original_np.shape[:2]  # Note: PIL gives size as (width, height)
+        rect = plt.Rectangle((0, 0), w, h, linewidth=4, edgecolor='black', facecolor='none')
+        axs[i][0].add_patch(rect)
 
         # Plot each in its respective column
         axs[i][0].imshow(original_img)
         axs[i][1].imshow(gt_mask_img)
         axs[i][2].imshow(pred_mask_img)
-        axs[i][3].imshow(smoothed_pred_img)
+        # axs[i][3].imshow(smoothed_pred_img)
 
         # Remove axes
         for j in range(n_cols):
             axs[i][j].axis('off')
 
     # Adjust layout and display
-    fig.suptitle("Segmentation Comparison", fontsize=22, y=1)
+    fig.suptitle("Segmentation Comparison", fontsize=17, y=1)
     plt.subplots_adjust(top=0.9)
     plt.tight_layout()
-    plt.savefig(f"results/plots/seg_comparison_kernel{size}.png", dpi=300)
+    plt.savefig(f"results/plots/seg_comparison.png", dpi=300)
+
+    break

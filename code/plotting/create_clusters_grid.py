@@ -13,7 +13,7 @@ fig_height = 16
 
 fig = plt.figure(figsize=(fig_width, fig_height))
 gs = gridspec.GridSpec(images_per_cluster, num_clusters)
-plt.suptitle("Representative Images from Each Cluster", fontsize=22, y=1)
+plt.suptitle("Representative Images from Each Cluster", fontsize=17, y=1)
 
 for i, cluster_path in enumerate(clusters):
     cluster_name = "Cluster: " + os.path.basename(cluster_path)
