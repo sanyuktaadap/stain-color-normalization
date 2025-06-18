@@ -34,6 +34,18 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
     total = len(image_paths)
     for i, image_path in enumerate(tqdm(image_paths)):
         print(f"{i+1}/{total} : {image_path}")
+
+        # Save patches and coordinates in HDF5 format
+        image_name = image_path.split("/")[-1]
+        image_name = image_name.split(".")[0]
+        os.makedirs(hdf5_folder, exist_ok=True)
+
+        img_hdf5_path = os.path.join(hdf5_folder, f"{image_name}.h5")
+
+        if os.path.exists(img_hdf5_path):
+            print(f"File {img_hdf5_path} already exists. Skipping...")
+            continue
+
         # Load the image
         # PIL Image opens it as width, height
         image = Image.open(image_path)
@@ -103,12 +115,8 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
                 coordinates.append((i, j))  # Stores the top-left corner (i, j) of the patch
 
         print(f"Total patches extracted: {len(patches)}")
-        # Save patches and coordinates in HDF5 format
-        image_name = image_path.split("/")[-1]
-        image_name = image_name.split(".")[0]
-        os.makedirs(hdf5_folder, exist_ok=True)
 
-        with h5py.File(f"{os.path.join(hdf5_folder, image_name)}.h5", 'w') as h5f:
+        with h5py.File(img_hdf5_path, 'w') as h5f:
             h5f.create_dataset('imgs', data=np.array(patches))
             h5f.create_dataset('coords', data=np.array(coordinates), chunks=True, maxshape=(None, 2))
 
