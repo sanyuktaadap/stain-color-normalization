@@ -32,13 +32,15 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
 
     image_paths = glob.glob(os.path.join(images_folder, "*"))
     total = len(image_paths)
+    os.makedirs(hdf5_folder, exist_ok=True)
+
     for i, image_path in enumerate(tqdm(image_paths)):
         print(f"{i+1}/{total} : {image_path}")
 
         # Save patches and coordinates in HDF5 format
         image_name = image_path.split("/")[-1]
         image_name = image_name.split(".")[0]
-        os.makedirs(hdf5_folder, exist_ok=True)
+        image_name = os.path.splitext(image_name)[0]
 
         img_hdf5_path = os.path.join(hdf5_folder, f"{image_name}.h5")
 
