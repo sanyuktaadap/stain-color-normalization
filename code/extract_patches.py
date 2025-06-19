@@ -1,12 +1,13 @@
 import numpy as np
 import h5py
-from PIL import Image
+from PIL import Image, ImageFile
 import os
 import glob
 from tqdm import tqdm
 import argparse
 from utils import save_file
 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 Image.MAX_IMAGE_PIXELS = None
 
 def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normalization/patching", intensity_thresh=245):
