@@ -40,9 +40,7 @@ def extract_patches(images_folder, patch_size=256, hdf5_folder="data/for_normali
 
         # Save patches and coordinates in HDF5 format
         image_name = image_path.split("/")[-1]
-        image_name = image_name.split(".")[0]
         image_name = os.path.splitext(image_name)[0]
-
         img_hdf5_path = os.path.join(hdf5_folder, f"{image_name}.h5")
 
         if os.path.exists(img_hdf5_path):
