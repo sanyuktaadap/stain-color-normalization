@@ -17,6 +17,7 @@ import numpy          as np
 import pandas         as pd
 import dask.array     as da
 import pickle5 as pickle
+from Utilities import log_memory
 
 __version__ = "0.0.1"
 
@@ -910,15 +911,24 @@ if __name__ == "__main__":
     StartTimer = datetime.now()
     TimeStamp = 'Start Time (hh:mm:ss.ms) {}'.format(StartTimer)
     print(TimeStamp)
+
     print('Begin housekeeping')
-    SlideImageArray,\
-    LabelMapImageArray  = Initialize()
+    log_memory("After housekeeping init")
+
+    SlideImageArray, LabelMapImageArray = Initialize()
+    log_memory("After Initialize()")  # <- likely big memory use
+
     print('Image Deconvolution Begins')
-    ComponentList       = ExecuteDeconvolution(SlideImageArray,LabelMapImageArray)
+    ComponentList = ExecuteDeconvolution(SlideImageArray, LabelMapImageArray)
+    log_memory("After ExecuteDeconvolution()")  # <- critical stage
+
     print('Image Deconvolution Ends')
     Terminate(ComponentList)
+    log_memory("After Terminate()")
 
     print('Wrap up time')
     TimeElapsed = datetime.now() - StartTimer
-    TimeStamp   = 'Time elapsed (hh:mm:ss.ms) {}\n'.format(TimeElapsed)
+    TimeStamp = 'Time elapsed (hh:mm:ss.ms) {}\n'.format(TimeElapsed)
     print(TimeStamp)
+
+    log_memory("End of script")

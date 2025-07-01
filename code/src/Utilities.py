@@ -11,6 +11,7 @@ import numpy as np
 import spams
 from sklearn.decomposition import MiniBatchDictionaryLearning
 from sklearn.linear_model import Lasso
+import psutil
 
 WHITE_COLOR                       = 255
 INFERRED_DIMENSION                = -1
@@ -53,6 +54,11 @@ def normalize_rows(A):
 
     return A / np.linalg.norm(A, axis=1)[:, None]
 
+
+def log_memory(stage=""):
+    process = psutil.Process()
+    mem = process.memory_info().rss / (1024 ** 3)  # GB
+    print(f"[Memory Log] {stage}: {mem:.2f} GB used")
 
 
 #-----------------------------------------------------------------
