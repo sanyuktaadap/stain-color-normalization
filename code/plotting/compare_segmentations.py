@@ -59,8 +59,16 @@ for size in kernel_sizes:
         # Draw a black box around the original image
         original_np = np.array(original_img)
         h, w = original_np.shape[:2]  # Note: PIL gives size as (width, height)
-        rect = plt.Rectangle((0, 0), w, h, linewidth=4, edgecolor='black', facecolor='none')
-        axs[i][0].add_patch(rect)
+
+        axs[i][0].add_patch(
+            plt.Rectangle((0, 0), w, h, linewidth=4, edgecolor='darkgrey', facecolor='none')
+        )
+        axs[i][1].add_patch(
+            plt.Rectangle((0, 0), w, h, linewidth=4, edgecolor='darkgrey', facecolor='none')
+        )
+        axs[i][2].add_patch(
+            plt.Rectangle((0, 0), w, h, linewidth=4, edgecolor='darkgrey', facecolor='none')
+        )
 
         # Plot each in its respective column
         axs[i][0].imshow(original_img)

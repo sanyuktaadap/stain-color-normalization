@@ -17,3 +17,6 @@ code/extra
 *.pyc
 *.__pycache__
 *.DS_Store
+tcga/
+*.png
+*__pycache__

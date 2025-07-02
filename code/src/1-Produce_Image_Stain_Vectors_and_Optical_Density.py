@@ -930,3 +930,12 @@ if __name__ == "__main__":
     TimeElapsed = datetime.now() - StartTimer
     TimeStamp = 'Time elapsed (hh:mm:ss.ms) {}\n'.format(TimeElapsed)
     print(TimeStamp)
+
+log_memory("End of script")
+
+	
+<<<<<<< HEAD
+=======
+
+    log_memory("End of script")
+>>>>>>> fe717d9ce5044e33be61491581225fe041034b92
