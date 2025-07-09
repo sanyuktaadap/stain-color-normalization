@@ -138,6 +138,9 @@ def CalculateStainVector(Image, Stain_Vector_Lambda, Stain_Vector_Training_Time,
     :return: A 2x3 matrix of stain vectors for Hematoxylin and Eosin.
     """
     NUMBER_OF_STAINS = 2
+    if Image.shape[-1] != 3:
+        # Drop the alpha channel
+        Image = Image[..., :3]
     # Assuming rgb2od and other necessary functions are defined elsewhere
     OD = rgb2od(Image).reshape((INFERRED_DIMENSION, NUMBER_OF_COLORS))  # Reshape the optical density matrix
     n_pixels = OD.shape[0]
@@ -162,16 +165,16 @@ def CalculateStainVector(Image, Stain_Vector_Lambda, Stain_Vector_Training_Time,
 
     # # Fit the model and retrieve the components (stain vectors)
     # model.fit(OD)
-    # StainVectors = model.components_
+    StainVectors = model.components_
 
-    # # Normalize each stain vector
-    # StainVectors = normalize_rows(StainVectors)
+    # Normalize each stain vector
+    StainVectors = normalize_rows(StainVectors)
 
-    # # Post-process StainVectors to ensure positivity if necessary
-    # # For example: StainVectors[StainVectors < 0] = 0
+    # Post-process StainVectors to ensure positivity if necessary
+    # For example: StainVectors[StainVectors < 0] = 0
 
-    # # Assuming SortOutStainVectors function is defined elsewhere and performs necessary post-processing
-    # StainVectorOutput = SortOutStainVectors(StainVectors)
+    # Assuming SortOutStainVectors function is defined elsewhere and performs necessary post-processing
+    StainVectorOutput = SortOutStainVectors(StainVectors)
 
     return StainVectorOutput
 
@@ -185,6 +188,9 @@ def CalculateDensityMap(Image, StainMatrix,lamda,n_chunks=50):
     """
 
     OD = rgb2od(Image).reshape(INFERRED_DIMENSION, NUMBER_OF_COLORS)
+    if Image.shape[-1] != 3:
+        # Drop the alpha channel
+        Image = Image[..., :3]
     n_pixels = OD.shape[0]
     chunk_size = (n_pixels + n_chunks - 1) // n_chunks
     results = []
