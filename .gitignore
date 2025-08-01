@@ -20,3 +20,8 @@ code/extra
 tcga/
 *.png
 *__pycache__
+*.pyc
+*.jpg
+*.jpeg
+*.yml
+*.txt
