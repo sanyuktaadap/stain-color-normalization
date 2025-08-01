@@ -469,10 +469,17 @@ def LoadImagePairs(SlideName, LabelMapName):
         ImageOfInterestRGB = dask_array[:, :, :3]
         print("RGB channels extracted")
     else:
-        ImageOfInterestRGB = imread(SlideName)
+        # ImageOfInterestRGB = imread(SlideName)
+        with Image.open(SlideName) as img:
+            img.info.pop('icc_profile', None)
+            ImageOfInterestRGB = np.array(img)
 
     print('Loading Image Map')
-    LabelMapImage      = imread(LabelMapName, as_gray=True)
+    # LabelMapImage      = imread(LabelMapName, as_gray=True)
+    with Image.open(LabelMapName) as img:
+        img.info.pop('icc_profile', None)
+        img = img.convert('L')  # Convert to grayscale
+        LabelMapImage = np.array(img)
 
     return ImageOfInterestRGB, LabelMapImage
 
