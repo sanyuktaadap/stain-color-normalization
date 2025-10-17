@@ -152,10 +152,15 @@ def compare_pi_std_by_roi(image_folders=["data/for_normalization/Images",
 
     data = pd.DataFrame(df)
     data.to_csv(os.path.join(output_folder, f"std_pi_{num_rois-1}.csv"), index=False)
-
+    # df = pd.read_csv(os.path.join(output_folder, f"csv/std_pi_{num_rois}.csv"))
+    df = df[df['roi'] != 0]
     # Plotting
-    print("Plotting")
-    output_path = os.path.join(output_folder, f"std_pi_{num_rois-1}.png")
+    print(f'Plotting: {os.path.join(output_folder, f"csv/std_pi_{num_rois}.csv")}')
+    output_path = os.path.join(output_folder, f"rgb_std_pi_{num_rois}.png")
+
+    # Set global font size
+    plt.rcParams.update({'font.size': 17})
+
     plt.figure(figsize=(20, 14))
     sns.boxplot(data=df,
                 x='roi',
@@ -166,7 +171,9 @@ def compare_pi_std_by_roi(image_folders=["data/for_normalization/Images",
                            'markerfacecolor':'white',
                            'markeredgecolor':'black',
                            'markersize':'8'})
-    sns.swarmplot(data=df, x='roi', y='std', hue='group', dodge=True, s=4)
+    sns.swarmplot(data=df, x='roi', y='std', hue='group', dodge=True,
+                  s=4, palette=sns.color_palette(n_colors=3), legend=False)
+
     plt.xlabel("Regions of Interest")
     plt.ylabel("Standard Deviation of Pixel Intensities")
     plt.title("Standard Deviation of Pixel Intensities by ROI")
