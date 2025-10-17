@@ -25,3 +25,5 @@ tcga/
 *.jpeg
 *.yml
 *.txt
+Images_*
+*__pycache__
