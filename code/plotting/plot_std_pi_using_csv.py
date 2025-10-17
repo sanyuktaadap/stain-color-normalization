@@ -12,21 +12,21 @@ def plot_std_from_csv(output_folder="results/plots", num_rois=11):
     e_data = pd.read_csv(e_csv_path)
 
     # Filter out ROI 0 (background)
-    h_data = h_data[h_data['h_roi'] != 0]
-    e_data = e_data[e_data['e_roi'] != 0]
+    h_data = h_data[h_data['roi'] != 0]
+    e_data = e_data[e_data['roi'] != 0]
 
     # Set global font size
-    plt.rcParams.update({'font.size': 33})
+    plt.rcParams.update({'font.size': 17})
 
     # Create side-by-side plots
     fig, axs = plt.subplots(1, 2, figsize=(32, 14), sharey=True)
 
     # Hematoxylin Plot
-    sns.boxplot(data=h_data, x='h_roi', y='h_std', hue='hem_group',
+    sns.boxplot(data=h_data, x='roi', y='std', hue='group',
                 showmeans=True, ax=axs[0],
                 linewidth=2,
                 meanprops={'marker': 'o', 'markerfacecolor': 'white', 'markeredgecolor': 'black', 'markersize': 8})
-    sns.swarmplot(data=h_data, x='h_roi', y='h_std', hue='hem_group',
+    sns.swarmplot(data=h_data, x='roi', y='std', hue='group', legend=False,
                   dodge=True, s=4, ax=axs[0], palette=sns.color_palette(n_colors=3))
     axs[0].set_title("Hematoxylin")
     axs[0].set_xlabel("Regions of Interest")
@@ -34,11 +34,11 @@ def plot_std_from_csv(output_folder="results/plots", num_rois=11):
     axs[0].legend_.remove()
 
     # Eosin Plot
-    sns.boxplot(data=e_data, x='e_roi', y='e_std', hue='eos_group',
+    sns.boxplot(data=e_data, x='roi', y='std', hue='group',
                 showmeans=True, ax=axs[1],
                 linewidth=2,
                 meanprops={'marker': 'o', 'markerfacecolor': 'white', 'markeredgecolor': 'black', 'markersize': 8})
-    sns.swarmplot(data=e_data, x='e_roi', y='e_std', hue='eos_group',
+    sns.swarmplot(data=e_data, x='roi', y='std', hue='group', legend=False,
                   dodge=True, s=4, ax=axs[1], palette=sns.color_palette(n_colors=3))
     axs[1].set_title("Eosin")
     axs[1].set_xlabel("Regions of Interest")
@@ -51,30 +51,30 @@ def plot_std_from_csv(output_folder="results/plots", num_rois=11):
     plt.savefig(os.path.join(output_folder, f"hed_std_pi_{num_rois}.png"), dpi=300)
     plt.close()
 
-    # # Individual plots
-    # # Hematoxylin
-    # plt.figure(figsize=(20, 14))
-    # sns.boxplot(data=h_data, x='h_roi', y='h_std', hue='hem_group', showmeans=True,
-    #             meanprops={'marker': 'o', 'markerfacecolor': 'white', 'markeredgecolor': 'black', 'markersize': 8})
-    # sns.swarmplot(data=h_data, x='h_roi', y='h_std', hue='hem_group', dodge=True, s=4)
-    # plt.xlabel("Regions of Interest")
-    # plt.ylabel("Standard Deviation of Pixel Intensities")
-    # plt.title("Hematoxylin - Standard Deviation of Pixel Intensities by ROI")
-    # plt.legend(loc=1)
-    # plt.savefig(os.path.join(output_folder, f"hematoxilin_{num_rois}_from_csv.png"), dpi=300)
-    # plt.close()
+    # Individual plots
+    # Hematoxylin
+    plt.figure(figsize=(20, 14))
+    sns.boxplot(data=h_data, x='roi', y='std', hue='group', showmeans=True,
+                meanprops={'marker': 'o', 'markerfacecolor': 'white', 'markeredgecolor': 'black', 'markersize': 8})
+    sns.swarmplot(data=h_data, x='roi', y='std', hue='group', dodge=True, s=4, legend=False,)
+    plt.xlabel("Regions of Interest")
+    plt.ylabel("Standard Deviation of Pixel Intensities")
+    plt.title("Hematoxylin - Standard Deviation of Pixel Intensities by ROI")
+    plt.legend(loc=1)
+    plt.savefig(os.path.join(output_folder, f"hematoxilin_{num_rois}_from_csv.png"), dpi=300)
+    plt.close()
 
-    # # Eosin
-    # plt.figure(figsize=(20, 14))
-    # sns.boxplot(data=e_data, x='e_roi', y='e_std', hue='eos_group', showmeans=True,
-    #             meanprops={'marker': 'o', 'markerfacecolor': 'white', 'markeredgecolor': 'black', 'markersize': 8})
-    # sns.swarmplot(data=e_data, x='e_roi', y='e_std', hue='eos_group', dodge=True, s=4)
-    # plt.xlabel("Regions of Interest")
-    # plt.ylabel("Standard Deviation of Pixel Intensities")
-    # plt.title("Eosin - Standard Deviation of Pixel Intensities by ROI")
-    # plt.legend(loc=1)
-    # plt.savefig(os.path.join(output_folder, f"eosin_{num_rois}_from_csv.png"), dpi=300)
-    # plt.close()
+    # Eosin
+    plt.figure(figsize=(20, 14))
+    sns.boxplot(data=e_data, x='roi', y='std', hue='group', showmeans=True,
+                meanprops={'marker': 'o', 'markerfacecolor': 'white', 'markeredgecolor': 'black', 'markersize': 8})
+    sns.swarmplot(data=e_data, x='roi', y='std', hue='group', dodge=True, s=4, legend=False,)
+    plt.xlabel("Regions of Interest")
+    plt.ylabel("Standard Deviation of Pixel Intensities")
+    plt.title("Eosin - Standard Deviation of Pixel Intensities by ROI")
+    plt.legend(loc=1)
+    plt.savefig(os.path.join(output_folder, f"eosin_{num_rois}_from_csv.png"), dpi=300)
+    plt.close()
 
     # print(f"Plots from CSV saved in {output_folder}")
 
@@ -150,7 +150,7 @@ def plot_median_barplot(csv_path, output_folder):
     else:
         num_rois = 8
 
-    group_order = ['ORG', 'JNI', 'SNI']
+    group_order = ['OII', 'INSM', 'INUM']
     df[col['group']] = pd.Categorical(df[col['group']], categories=group_order, ordered=True)
     df = df.sort_values(by=[col['roi'], col['group']])
 
@@ -177,7 +177,7 @@ def plot_median_heatmap(csv_path, output_folder):
     else:
         num_rois = 8
 
-    group_order = ['ORG', 'JNI', 'SNI']
+    group_order = ['OII', 'INSM', 'INUM']
     pivot_median = df.pivot(index=col['roi'], columns=col['group'], values=col['median'])
     pivot_median = pivot_median[group_order]  # Reorder x-axis
     pivot_median = pivot_median.sort_index()  # Sort ROI numerically (y-axis)
@@ -208,7 +208,7 @@ def plot_iqr_heatmap(csv_path, output_folder):
     save_path = os.path.join(output_folder, "iqr", f"iqr_heatmap_{col['stain'].lower()}_roi{num_rois}.png")
 
     # Pivot with specified group order and sorted ROI
-    group_order = ['ORG', 'JNI', 'SNI']
+    group_order = ['OII', 'INSM', 'INUM']
     pivot_iqr = df.pivot(index=col['roi'], columns=col['group'], values=col['iqr'])
     pivot_iqr = pivot_iqr[group_order]  # Set column order
     pivot_iqr = pivot_iqr.sort_index()  # Sort rows by ROI
@@ -223,20 +223,20 @@ def plot_iqr_heatmap(csv_path, output_folder):
     plt.close()
 
 
+if __name__ == "__main__":
+    # Example usage
+    plot_std_from_csv(output_folder="results/plots", num_rois=11)
+    plot_std_from_csv(output_folder="results/plots", num_rois=8)
 
-# Example usage
-plot_std_from_csv(num_rois=11)
-plot_std_from_csv(output_folder="results/plots", num_rois=8)
+    # save_iqr_tables(output_folder="results/plots/csv/", num_rois=11)
+    # save_iqr_tables(output_folder="results/plots/csv/", num_rois=8)
 
-save_iqr_tables(output_folder="results/plots/csv/", num_rois=11)
-save_iqr_tables(output_folder="results/plots/csv/", num_rois=8)
+    # path = "results/plots/csv/iqr_tables"
+    # output_folder="results/plots"
+    # iqr_tables = os.listdir(path)
 
-path = "results/plots/csv/iqr_tables"
-output_folder="results/plots"
-iqr_tables = os.listdir(path)
-
-for iqr_table in iqr_tables:
-    tab_path = os.path.join(path, iqr_table)
-    plot_median_barplot(tab_path,output_folder)
-    plot_median_heatmap(tab_path,output_folder)
-    plot_iqr_heatmap(tab_path,output_folder)
+    # for iqr_table in iqr_tables:
+    #     tab_path = os.path.join(path, iqr_table)
+    #     plot_median_barplot(tab_path,output_folder)
+    #     plot_median_heatmap(tab_path,output_folder)
+    #     plot_iqr_heatmap(tab_path,output_folder)
