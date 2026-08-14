@@ -70,3 +70,12 @@
   - To locate the map, the script will search for `292324400` within the map file name.
   - Similarly, the image name can be derived by splitting the name of the map file by “_” and then by “.” to match it to the corresponding image.
 
+## Citation
+
+```
+@article{Adap2026UPStaiN,
+	author={Adap, Sanyukta and Baheti, Bhakti, and Bakas, Spyridon},
+	title={UPStaiN: Unsupervised Population-Based Morphology-Aware Stain Normalization},
+	year={2026}
+}
+```
